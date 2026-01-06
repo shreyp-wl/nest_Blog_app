@@ -4,11 +4,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { LoginUserDto } from 'src/user/dto/login-user.dto';
 import { User } from 'src/user/entities/user.entity';
 import { AuthUtils } from 'src/utils/auth.utils';
 import { Repository } from 'typeorm';
+import { createUserParams } from '../user/dto/create-user.dto';
+import { loginUserParams } from '../user/dto/login-user.dto';
 
 interface AuthResponse {
   accessToken: string;
@@ -22,10 +22,10 @@ export class AuthService {
     private readonly authUtils: AuthUtils,
   ) {}
   //login endpoint
-  async login(loginUserDto: LoginUserDto): Promise<AuthResponse> {
+  async login(loginUserParams: loginUserParams): Promise<AuthResponse> {
     const user = await this.userRepository.findOne({
       select: ['email', 'password'],
-      where: { email: loginUserDto.email },
+      where: { email: loginUserParams.email },
     });
 
     if (!user) {
@@ -33,7 +33,7 @@ export class AuthService {
     }
 
     const validPassword = await this.authUtils.validatePassword(
-      loginUserDto.password,
+      loginUserParams.password,
       user.password,
     );
 
@@ -42,13 +42,13 @@ export class AuthService {
     }
 
     const accessToken = this.authUtils.generateAccessToken({
-      email: loginUserDto.email,
-      password: loginUserDto.password,
+      email: loginUserParams.email,
+      password: loginUserParams.password,
     });
 
     const refreshToken = this.authUtils.generateRefreshToken({
-      email: loginUserDto.email,
-      password: loginUserDto.password,
+      email: loginUserParams.email,
+      password: loginUserParams.password,
     });
 
     user.refreshToken = refreshToken;
@@ -60,13 +60,15 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async register(createUserDto: CreateUserDto): Promise<CreateUserDto> {
+  async register(
+    createUserParams: createUserParams,
+  ): Promise<createUserParams> {
     let user = new User();
 
     const hashedPassword = await this.authUtils.hashPassword(
-      createUserDto.password,
+      createUserParams.password,
     );
-    user.email = createUserDto.email;
+    user.email = createUserParams.email;
     user.password = hashedPassword;
     user = await this.userRepository.save(user);
 
