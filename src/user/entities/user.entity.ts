@@ -1,19 +1,28 @@
 import { Entity, Column, OneToMany } from 'typeorm';
-import { userRoles } from '../user.types';
+import { userRoles } from '../user-types';
 import { RoleApproval } from 'src/entities/role-approval.entity';
 import { BaseEntity } from 'src/modules/database/base-entity';
 import { Exclude, Expose } from 'class-transformer';
+import { MinLength } from 'class-validator';
 
 @Entity()
 export class User extends BaseEntity {
-  @Expose()
+  @Column({ unique: true, nullable: false, select: true })
+  username: string;
+
+  @Column({ nullable: false })
+  firstname: string;
+
+  @Column({ nullable: false })
+  lastname: string;
+
   @Column({
     unique: true,
     nullable: false,
+    select: true,
   })
   email: string;
 
-  @Exclude()
   @Column({
     nullable: false,
     select: false,
@@ -21,20 +30,17 @@ export class User extends BaseEntity {
   })
   password: string;
 
-  @Expose()
   @Column({
     default: true,
     nullable: false,
   })
   isActive: boolean;
 
-  @Expose()
   @Column({
     default: userRoles.READER,
   })
   role: userRoles;
 
-  @Exclude()
   @Column({
     nullable: true,
   })
@@ -42,4 +48,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => RoleApproval, (approval) => approval.user)
   roleRequest: RoleApproval[];
+
+  @Column({
+    nullable: true,
+  })
+  isDeleted: boolean;
 }

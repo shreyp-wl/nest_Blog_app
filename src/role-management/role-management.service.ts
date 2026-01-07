@@ -9,7 +9,7 @@ import {
   RoleApprovalStatus,
 } from 'src/entities/role-approval.entity';
 import { Repository } from 'typeorm';
-import { userRoles } from 'src/user/user.types';
+import { userRoles } from 'src/user/user-types';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()

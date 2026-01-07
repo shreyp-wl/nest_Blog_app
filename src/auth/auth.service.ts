@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -61,14 +62,25 @@ export class AuthService {
   async register(
     createUserParams: createUserParams,
   ): Promise<createUserParams> {
-    let user = new User();
+    const existingUser = await this.userRepository.find({
+      where: [
+        { email: createUserParams.email },
+        { username: createUserParams.username },
+      ],
+    });
+
+    if (existingUser.length > 0) {
+      throw new ConflictException('A user already exists with provided data.');
+    }
 
     const hashedPassword = await this.authUtils.hashPassword(
       createUserParams.password,
     );
-    user.email = createUserParams.email;
-    user.password = hashedPassword;
-    user = await this.userRepository.save(user);
+
+    createUserParams.password = hashedPassword;
+
+    const newUser = this.userRepository.create(createUserParams);
+    const user = await this.userRepository.save(newUser);
 
     return user;
   }

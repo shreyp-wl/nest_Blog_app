@@ -1,8 +1,37 @@
 // src/users/dto/login-user.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEmpty,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
+  @ApiProperty({
+    example: 'john_doe',
+    description: 'username you wish to have',
+  })
+  @MinLength(5, {
+    message: 'Username must be longer than or equal to $constraint1 characters',
+  })
+  readonly username: string;
+
+  @ApiProperty({
+    example: 'john',
+    description: 'Your firstname',
+  })
+  @IsNotEmpty()
+  readonly firstname: string;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    example: 'doe',
+    description: 'Your lastname',
+  })
+  readonly lastname: string;
+
   @ApiProperty({
     example: 'john_doe@email.com',
     description: 'email of user',
