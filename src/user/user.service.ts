@@ -9,6 +9,12 @@ import {
 } from 'src/common/helper/pagination.helper';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { paginationMeta } from 'src/common/interfaces/pagination.interfaces';
+import {
+  buildDeleteUserByIdQuery,
+  buildFindAllUsersQuery,
+  buildFindUserByIdQuery,
+  buildUpdateUserByIdQuery,
+} from 'src/common/queries/user.queries';
 
 @Injectable()
 export class UserService {
@@ -21,17 +27,7 @@ export class UserService {
     limit: number,
     isPagination: boolean,
   ): Promise<paginationMeta> {
-    const queryBuilder = this.userRepository
-      .createQueryBuilder('user')
-      .select([
-        'user.id',
-        'user.email',
-        'user.role',
-        'user.username',
-        'user.firstname',
-        'user.lastname',
-      ])
-      .orderBy('user.createdAt', 'DESC');
+    const queryBuilder = buildFindAllUsersQuery(this.userRepository);
 
     if (isPagination) {
       const offset = getOffset(page, limit);
@@ -44,20 +40,7 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .select([
-        'user.id',
-        'user.email',
-        'user.role',
-        'user.username',
-        'user.firstname',
-        'user.lastname',
-      ])
-      .where('user.id = :id', {
-        id,
-      })
-      .getOne();
+    const user = await buildFindUserByIdQuery(this.userRepository, id).getOne();
 
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
@@ -67,14 +50,11 @@ export class UserService {
   }
 
   async update(id: string, updateUserParams: updateUserParams): Promise<void> {
-    const result = await this.userRepository
-      .createQueryBuilder('user')
-      .update({
-        ...updateUserParams,
-        updatedAt: () => 'CURRENT_TIMESTAMP',
-      })
-      .where('id = :id', { id })
-      .execute();
+    const result = await buildUpdateUserByIdQuery(
+      this.userRepository,
+      id,
+      updateUserParams,
+    ).execute();
 
     if (result.affected === 0) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
@@ -82,11 +62,6 @@ export class UserService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.userRepository
-      .createQueryBuilder('user')
-      .update(User)
-      .set({ deletedAt: () => 'CURRENT_TIMESTAMP' })
-      .where('id = :id', { id })
-      .execute();
+    await buildDeleteUserByIdQuery(this.userRepository, id).execute();
   }
 }
