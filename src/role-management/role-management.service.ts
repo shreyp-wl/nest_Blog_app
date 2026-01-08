@@ -7,11 +7,12 @@ import {
 import {
   RoleApproval,
   RoleApprovalStatus,
-} from 'src/entities/role-approval.entity';
+} from 'src/role-management/entities/role-management.entity';
 import { Repository } from 'typeorm';
 import { userRoles } from 'src/user/user-types';
 import { User } from 'src/user/entities/user.entity';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
+import { ID_SELECT_FIELDS } from 'src/user/user.constants';
 
 @Injectable()
 export class RoleManagementService {
@@ -25,7 +26,7 @@ export class RoleManagementService {
   async requestUpdgrade(requestedRole: userRoles, id: string): Promise<void> {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .select(['user.id'])
+      .select(ID_SELECT_FIELDS)
       .where('user.id = :id', {
         id,
       })
@@ -47,19 +48,17 @@ export class RoleManagementService {
       throw new ConflictException(ERROR_MESSAGES.CONFLICT);
     }
 
-    await this.roleApprovalRepository
-      .createQueryBuilder('role')
-      .insert()
-      .into(RoleApproval)
-      .values([{ requestedRole, userId: id }])
-      .execute();
+    await this.roleApprovalRepository.save({
+      requestedRole,
+      userId: id,
+    });
   }
 
   //get my requests
   async getMyRequests(id: string): Promise<Partial<RoleApproval[]>> {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .select(['user.id'])
+      .select(ID_SELECT_FIELDS)
       .where('user.id = :id', { id })
       .getOne();
 
@@ -112,24 +111,30 @@ export class RoleManagementService {
       ? RoleApprovalStatus.APPROVED
       : RoleApprovalStatus.REJECTED;
 
-    await this.roleApprovalRepository
-      .createQueryBuilder('role')
-      .update({ status: updateStatus })
-      .where('id = :roleApprovalRequestId', {
-        roleApprovalRequestId,
-      })
-      .execute();
+    const roleApproval = await this.roleApprovalRepository.preload({
+      id: roleApprovalRequestId,
+      status: updateStatus,
+    });
+
+    if (!roleApproval) {
+      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    await this.roleApprovalRepository.save(roleApproval);
 
     const { userId, requestedRole: role } = requestExists;
 
     if (isApproved) {
-      await this.userRepository
-        .createQueryBuilder('user')
-        .update({
-          role,
-        })
-        .where('user.id = :userId', { userId })
-        .execute();
+      const user = await this.userRepository.preload({
+        id: userId,
+        role,
+      });
+
+      if (!user) {
+        throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+      }
+
+      await this.userRepository.save(user);
     }
   }
 }

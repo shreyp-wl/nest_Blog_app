@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { RoleApprovalStatus } from 'src/entities/role-approval.entity';
+import { RoleApprovalStatus } from 'src/role-management/entities/role-management.entity';
 import { ApiPropertyWritable } from 'src/modules/swagger/swagger.writable.decorator';
 import { userRoles } from 'src/user/user-types';
 
@@ -7,6 +7,10 @@ export class MyRequestsResponse {
   @Expose()
   @ApiPropertyWritable()
   id: string;
+
+  @Exclude()
+  @ApiPropertyWritable()
+  userId: string;
 
   @Expose()
   @ApiPropertyWritable()

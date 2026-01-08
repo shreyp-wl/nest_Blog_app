@@ -1,7 +1,8 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { userRoles } from './user-types';
 import { ApiPropertyWritable } from 'src/modules/swagger/swagger.writable.decorator';
 import { PaginationMetaResponse } from 'src/common/responses/pagination.response';
+import { RoleApproval } from 'src/role-management/entities/role-management.entity';
 
 export class UserResponse {
   @Expose()
@@ -10,15 +11,15 @@ export class UserResponse {
 
   @Expose()
   @ApiPropertyWritable({ example: 'johndoe' })
-  username: string;
+  userName: string;
 
   @Expose()
   @ApiPropertyWritable({ example: 'John' })
-  firstname: string;
+  firstName: string;
 
   @Expose()
   @ApiPropertyWritable({ example: 'Doe' })
-  lastname: string;
+  lastName: string;
 
   @Expose()
   @ApiPropertyWritable({ example: 'john@example.com' })
@@ -27,6 +28,24 @@ export class UserResponse {
   @Expose()
   @ApiPropertyWritable({ enum: userRoles, example: userRoles.READER })
   role: userRoles;
+
+  @Exclude()
+  password: string;
+
+  @Exclude()
+  isActive: boolean;
+
+  @Exclude()
+  refreshToken: string;
+
+  @Exclude()
+  roleRequest: RoleApproval[];
+
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date;
 }
 
 export class FindAllUsersResponse {
@@ -36,5 +55,6 @@ export class FindAllUsersResponse {
 
   @Expose()
   @ApiPropertyWritable({ type: PaginationMetaResponse })
+  @Type(() => PaginationMetaResponse)
   meta: PaginationMetaResponse;
 }

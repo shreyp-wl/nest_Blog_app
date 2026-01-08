@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { RoleManagementService } from './role-management.service';
 import { RoleManagementController } from './role-management.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RoleApproval } from 'src/entities/role-approval.entity';
+import { RoleApproval } from 'src/role-management/entities/role-management.entity';
 import { User } from 'src/user/entities/user.entity';
 import { AuthGuard } from 'src/modules/guards/auth.guard';
 import { AuthUtils } from 'src/utils/auth.utils';

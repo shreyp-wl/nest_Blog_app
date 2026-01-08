@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsBoolean } from 'class-validator';
+import { IsEnum, IsBoolean, IsNotEmpty } from 'class-validator';
+import { TrimString } from 'src/modules/decorators/trim-string.decorator';
 import { userRoles } from 'src/user/user-types';
 
 export class UpdateRoleDto {
@@ -10,6 +11,8 @@ export class UpdateRoleDto {
   @IsEnum(userRoles, {
     message: 'Role must be either admin, reader, or author',
   })
+  @IsNotEmpty()
+  @TrimString()
   role: userRoles;
 }
 
@@ -21,5 +24,6 @@ export class processRoleApprovalRequestDto {
   @IsBoolean({
     message: 'Role approval status can not be empty',
   })
+  @IsNotEmpty()
   isApproved: boolean;
 }

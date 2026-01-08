@@ -19,8 +19,9 @@ import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
 import responseUtils from 'src/utils/response.utils';
 import type { Response } from 'express';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { USER_ROUTES } from 'src/constants/routes';
 
-@Controller('user')
+@Controller(USER_ROUTES.USER)
 @UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -46,7 +47,7 @@ export class UserController {
   }
 
   @ApiSwaggerResponse(UserResponse)
-  @Get(':id')
+  @Get(USER_ROUTES.FIND_ONE)
   async findOne(@Res() res: Response, @Param('id') id: string) {
     try {
       const result = await this.userService.findOne(id);
@@ -60,7 +61,7 @@ export class UserController {
   }
 
   @ApiSwaggerResponse(MessageResponse)
-  @Patch(':id')
+  @Patch(USER_ROUTES.UPDATE)
   update(
     @Res() res: Response,
     @Param('id') id: string,
@@ -80,7 +81,7 @@ export class UserController {
   }
 
   @ApiSwaggerResponse(MessageResponse)
-  @Delete(':id')
+  @Delete(USER_ROUTES.DELETE)
   remove(@Res() res: Response, @Param('id') id: string) {
     try {
       this.userService.remove(id);

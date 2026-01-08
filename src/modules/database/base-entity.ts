@@ -44,5 +44,5 @@ export class BaseEntity {
   @DeleteDateColumn({
     type: 'timestamp',
   })
-  deletedAt: Date;
+  deletedAt?: Date;
 }
