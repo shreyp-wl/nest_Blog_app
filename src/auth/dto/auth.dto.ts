@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { TrimString } from 'src/modules/decorators/trim-string.decorator';
 
 export class LoginUserDto {
   @ApiProperty({
@@ -9,6 +10,8 @@ export class LoginUserDto {
     description: 'Email of user',
   })
   @IsEmail({}, { message: 'Please enter a valid email address.' })
+  @IsNotEmpty()
+  @TrimString()
   readonly email: string;
 
   @IsString()
@@ -19,6 +22,8 @@ export class LoginUserDto {
     required: true,
     description: 'Password of user',
   })
+  @IsNotEmpty()
+  @TrimString()
   readonly password: string;
 }
 
@@ -30,27 +35,33 @@ export class CreateUserDto {
   @MinLength(5, {
     message: 'Username must be longer than or equal to $constraint1 characters',
   })
-  readonly username: string;
+  @IsNotEmpty()
+  @TrimString()
+  readonly userName: string;
 
   @ApiProperty({
     example: 'john',
     description: 'Your firstname',
   })
   @IsNotEmpty()
-  readonly firstname: string;
+  @TrimString()
+  readonly firstName: string;
 
-  @IsNotEmpty()
   @ApiProperty({
     example: 'doe',
     description: 'Your lastname',
   })
-  readonly lastname: string;
+  @IsNotEmpty()
+  @TrimString()
+  readonly lastName: string;
 
   @ApiProperty({
     example: 'john_doe@email.com',
     description: 'email of user',
   })
   @IsEmail({}, { message: 'Please enter a valid email address.' })
+  @IsNotEmpty()
+  @TrimString()
   readonly email: string;
 
   @ApiProperty({
@@ -59,5 +70,7 @@ export class CreateUserDto {
   })
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long.' })
+  @IsNotEmpty()
+  @TrimString()
   readonly password: string;
 }

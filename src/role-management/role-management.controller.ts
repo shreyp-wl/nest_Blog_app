@@ -26,15 +26,16 @@ import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
 } from 'src/constants/messages.constants';
+import { ROLE_MANAGEMENT_ROUTES } from 'src/constants/routes';
 
-@Controller('role')
+@Controller(ROLE_MANAGEMENT_ROUTES.ROLE)
 @UseGuards(AuthGuard)
 export class RoleManagementController {
   constructor(private readonly roleManagementService: RoleManagementService) {}
 
   //get my requests
   @ApiSwaggerResponse(MyRequestsResponse)
-  @Get(':id/my-requests')
+  @Get(ROLE_MANAGEMENT_ROUTES.MY_REQUESTS)
   async getMyRequests(@Res() res: Response, @Param('id') userId: string) {
     try {
       const result = await this.roleManagementService.getMyRequests(userId);
@@ -43,14 +44,14 @@ export class RoleManagementController {
         data: result,
         transformWith: MyRequestsResponse,
       });
-    } catch (error: AnyType) {
+    } catch (error) {
       return responseUtils.error({ res, error });
     }
   }
 
   //request upgrade
   @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.CREATED })
-  @Post(':id/upgrade')
+  @Post(ROLE_MANAGEMENT_ROUTES.UPGRADE_ROLE)
   async requestUpdgrade(
     @Res() res: Response,
     @Body() updateRoleDto: UpdateRoleDto,
@@ -77,7 +78,7 @@ export class RoleManagementController {
   }
   //get pending reqests
   @ApiSwaggerResponse(PendingRequestsResponse, {})
-  @Get('pending-requests')
+  @Get(ROLE_MANAGEMENT_ROUTES.PENDING_REQUESTS)
   async getPendingRequest(@Res() res: Response) {
     try {
       const result = await this.roleManagementService.getPendingRequest();
@@ -91,7 +92,7 @@ export class RoleManagementController {
   }
   //approve / reject request
   @ApiSwaggerResponse(MessageResponse)
-  @Patch('/:id/process-request')
+  @Patch(ROLE_MANAGEMENT_ROUTES.PROCESS_REQUEST)
   async processRequest(
     @Res() res: Response,
     @Body() { isApproved }: processRoleApprovalRequestDto,

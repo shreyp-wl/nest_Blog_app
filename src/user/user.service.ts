@@ -3,14 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { updateUserParams } from './user-types';
+import { ERROR_MESSAGES } from 'src/constants/messages.constants';
+import { paginationMeta } from 'src/common/interfaces/pagination.interfaces';
+import { USER_SELECT_FIELDS } from 'src/user/user.constants';
+import { SORT_ORDER, SORTBY } from 'src/common/enums';
 import {
   getOffset,
   getPageinationMeta,
 } from 'src/common/helper/pagination.helper';
-import { ERROR_MESSAGES } from 'src/constants/messages.constants';
-import { paginationMeta } from 'src/common/interfaces/pagination.interfaces';
-import { USER_SELECT_FIELDS } from 'src/common/queries';
-import { SORTBY } from 'src/common/enums';
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,7 @@ export class UserService {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .select(USER_SELECT_FIELDS)
-      .orderBy(`user.${SORTBY.CREATED_AT}`, SORTBY.DESC);
+      .orderBy(`user.${SORTBY.CREATED_AT}`, SORT_ORDER.DESC);
 
     if (isPagination) {
       const offset = getOffset(page, limit);
@@ -55,26 +55,29 @@ export class UserService {
   }
 
   async update(id: string, updateUserParams: updateUserParams): Promise<void> {
-    const result = await await this.userRepository
-      .createQueryBuilder('user')
-      .update({
-        ...updateUserParams,
-        updatedAt: () => 'CURRENT_TIMESTAMP',
-      })
-      .where('id = :id', { id })
-      .execute();
+    const result = await this.userRepository.preload({
+      id: id,
+      updatedAt: Date.now(),
+      ...updateUserParams,
+    });
 
-    if (result.affected === 0) {
+    if (!result) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
+
+    await this.userRepository.save(result);
   }
 
   async remove(id: string): Promise<void> {
-    await this.userRepository
-      .createQueryBuilder('user')
-      .update(User)
-      .set({ deletedAt: () => 'CURRENT_TIMESTAMP' })
-      .where('id = :id', { id })
-      .execute();
+    const user = await this.userRepository.preload({
+      id,
+      deletedAt: new Date(),
+    });
+
+    if (!user) {
+      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    await this.userRepository.save(user);
   }
 }

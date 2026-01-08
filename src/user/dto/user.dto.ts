@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { updateUserParams } from '../user-types';
 import { IsNotEmpty, MinLength } from 'class-validator';
+import { TrimString } from 'src/modules/decorators/trim-string.decorator';
 
 export class UpdateUserDto implements updateUserParams {
   @ApiProperty({
@@ -11,19 +12,22 @@ export class UpdateUserDto implements updateUserParams {
     message: 'Username must be longer than or equal to $constraint1 characters',
   })
   @IsNotEmpty()
-  readonly username: string;
+  @TrimString()
+  readonly userName: string;
 
   @ApiProperty({
     example: 'john',
     description: 'Your firstname',
   })
   @IsNotEmpty()
-  readonly firstname: string;
+  @TrimString()
+  readonly firstName: string;
 
-  @IsNotEmpty()
   @ApiProperty({
     example: 'doe',
     description: 'Your lastname',
   })
-  readonly lastname: string;
+  @IsNotEmpty()
+  @TrimString()
+  readonly lastName: string;
 }

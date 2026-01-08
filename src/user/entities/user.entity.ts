@@ -1,18 +1,18 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { userRoles } from '../user-types';
-import { RoleApproval } from 'src/entities/role-approval.entity';
+import { RoleApproval } from 'src/role-management/entities/role-management.entity';
 import { BaseEntity } from 'src/modules/database/base-entity';
 
 @Entity()
 export class User extends BaseEntity {
   @Column({ unique: true, nullable: false, select: true })
-  username: string;
+  userName: string;
 
   @Column({ nullable: false })
-  firstname: string;
+  firstName: string;
 
   @Column({ nullable: false })
-  lastname: string;
+  lastName: string;
 
   @Column({
     unique: true,
@@ -41,7 +41,7 @@ export class User extends BaseEntity {
   @Column({
     nullable: true,
   })
-  refreshToken: string;
+  refreshToken?: string;
 
   @OneToMany(() => RoleApproval, (approval) => approval.user)
   roleRequest: RoleApproval[];

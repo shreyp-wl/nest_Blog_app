@@ -11,8 +11,8 @@ export enum RoleApprovalStatus {
 
 @Entity('role-approvals')
 export class RoleApproval extends BaseEntity {
-  @Column({ nullable: true })
-  userId?: string;
+  @Column()
+  userId: string;
 
   @ManyToOne('User', { nullable: true })
   @JoinColumn({ name: 'userId' })

@@ -22,13 +22,14 @@ import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
 } from 'src/constants/messages.constants';
+import { AUTH_ROUTES } from 'src/constants/routes';
 
-@ApiTags('auth')
-@Controller('auth')
+@ApiTags(AUTH_ROUTES.AUTH)
+@Controller(AUTH_ROUTES.AUTH)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
+  @Post(AUTH_ROUTES.REGISTER)
   @ApiBody({
     type: CreateUserDto,
   })
@@ -47,7 +48,7 @@ export class AuthController {
   }
 
   @ApiSwaggerResponse(MessageResponse)
-  @Post('login')
+  @Post(AUTH_ROUTES.LOGIN)
   async login(@Res() res: Response, @Body() { email, password }: LoginUserDto) {
     try {
       const { accessToken, refreshToken } = await this.authService.login({
@@ -68,7 +69,7 @@ export class AuthController {
   }
 
   @ApiSwaggerResponse(MessageResponse)
-  @Post('refresh')
+  @Post(AUTH_ROUTES.REFRESH)
   async refresh(@Res() res: Response, @Req() req: Request) {
     const oldRefrshToken: unknown = req.cookies['refreshToken'];
 
@@ -93,7 +94,7 @@ export class AuthController {
   }
 
   @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.NO_CONTENT })
-  @Post('logout')
+  @Post(AUTH_ROUTES.LOGOUT)
   logout(@Res() res: Response) {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');

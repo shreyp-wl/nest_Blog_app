@@ -18,12 +18,13 @@ import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import {
   LOGIN_SELECT_FIELDS,
   REGISTER_SELECT_FIELDS,
-} from 'src/common/queries';
+} from 'src/user/user.constants';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly authUtils: AuthUtils,
   ) {}
 
@@ -62,27 +63,27 @@ export class AuthService {
     const accessToken = this.authUtils.generateAccessToken(tokenPayload);
     const refreshToken = this.authUtils.generateRefreshToken(tokenPayload);
 
-    await this.userRepository
-      .createQueryBuilder('')
-      .update({ refreshToken })
-      .where('id = :id', {
-        id,
-      })
-      .execute();
+    user.refreshToken = refreshToken;
+    await this.userRepository.save(user);
 
     return { accessToken, refreshToken };
   }
 
-  async register(createUserParams: createUserParams): Promise<void> {
-    const { email, username, password, firstname, lastname } = createUserParams;
+  async register({
+    email,
+    userName,
+    password,
+    firstName,
+    lastName,
+  }: createUserParams): Promise<void> {
     const existingUser = await this.userRepository
       .createQueryBuilder('user')
       .select(REGISTER_SELECT_FIELDS)
       .where('user.email = :email', {
         email,
       })
-      .orWhere('user.username = :username', {
-        username,
+      .orWhere('user.userName = :userName', {
+        userName,
       })
       .getOne();
 
@@ -92,20 +93,13 @@ export class AuthService {
 
     const hashedPassword = await this.authUtils.hashPassword(password);
 
-    await this.userRepository
-      .createQueryBuilder('user')
-      .insert()
-      .into(User)
-      .values([
-        {
-          email,
-          password: hashedPassword,
-          username,
-          firstname,
-          lastname,
-        },
-      ])
-      .execute();
+    await this.userRepository.save({
+      email,
+      password: hashedPassword,
+      userName,
+      firstName,
+      lastName,
+    });
   }
 
   async refresh(receivedRefreshToken: string): Promise<AuthResponse> {
@@ -118,13 +112,16 @@ export class AuthService {
     const accessToken = this.authUtils.generateAccessToken(tokenPayload);
     const refreshToken = this.authUtils.generateRefreshToken(tokenPayload);
 
-    await this.userRepository
-      .createQueryBuilder()
-      .update({ refreshToken })
-      .where('id = :id', {
-        id,
-      })
-      .execute();
+    const user = await this.userRepository.preload({
+      id,
+      refreshToken,
+    });
+
+    if (!user) {
+      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    await this.userRepository.save(user);
 
     return { accessToken, refreshToken };
   }
