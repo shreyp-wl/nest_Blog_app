@@ -1,7 +1,7 @@
-import { BaseEntity } from '../../modules/database/base-entity';
-import { User } from '../../user/entities/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BLOG_POST_STATUS } from '../blogpost-types';
+import { BaseEntity } from '../base-entity';
+import { User } from './user.entity';
+import { BLOG_POST_STATUS } from '../../../blogpost/blogpost-types';
 
 @Entity('blogpost')
 export class BlogpostEntity extends BaseEntity {
@@ -14,6 +14,12 @@ export class BlogpostEntity extends BaseEntity {
     nullable: false,
   })
   content: string;
+
+
+  @Column({
+    nullable: false,
+  })
+  newColumn : string;
   @Column({
     nullable: false,
     unique: true,
