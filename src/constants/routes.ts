@@ -15,8 +15,17 @@ export const ROLE_MANAGEMENT_ROUTES = {
 };
 
 export const USER_ROUTES = {
- USER : 'user',
- FIND_ONE : ':id',
- UPDATE :':id',
- DELETE : ':id'
-}
+  USER: 'user',
+  FIND_ONE: ':id',
+  UPDATE: ':id',
+  DELETE: ':id',
+};
+
+export const BLOG_POST_ROUTES = {
+  BLOG_POST: 'blogpost',
+  CREATE: '',
+  GET_ALL: '',
+  UPDATE: ':id',
+  DELETE: ':id',
+  PUBLISH: ':id/publish',
+};
