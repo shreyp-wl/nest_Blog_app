@@ -10,7 +10,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch", 
+    "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "migration:show": "pnpm run typeorm -- migration:show",
     "typeorm": "typeorm-ts-node-commonjs -d ./dist/modules/database/data-source.js",
@@ -43,7 +43,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
