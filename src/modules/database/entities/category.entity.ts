@@ -30,6 +30,6 @@ export class CategoryEntity extends BaseEntity {
   })
   isActive: boolean;
 
-  @OneToMany(() => BlogpostEntity, (post) => post.categoryId)
+  @OneToMany(() => BlogpostEntity, (post) => post.category)
   blogPosts: BlogpostEntity[];
 }

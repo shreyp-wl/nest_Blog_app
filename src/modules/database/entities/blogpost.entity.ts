@@ -52,7 +52,7 @@ export class BlogpostEntity extends BaseEntity {
   })
   categoryId?: string;
 
-  @ManyToOne('CategoryEntity', {
+  @ManyToOne(() => CategoryEntity, (category) => category.blogPosts, {
     nullable: true,
   })
   @JoinColumn({
