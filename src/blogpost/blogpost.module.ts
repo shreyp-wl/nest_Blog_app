@@ -7,6 +7,7 @@ import { AuthGuard } from 'src/modules/guards/auth.guard';
 import { OwnershipGuard } from 'src/modules/guards/ownership.guard';
 import { AuthUtils } from 'src/utils/auth.utils';
 import { UserEntity } from 'src/modules/database/entities/user.entity';
+import { SearchService } from './search.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([BlogpostEntity, UserEntity])],
@@ -18,6 +19,7 @@ import { UserEntity } from 'src/modules/database/entities/user.entity';
     OwnershipGuard,
     AuthUtils,
   ],
+  providers: [BlogpostService, SearchService, BlogpostEntity],
   exports: [BlogpostEntity],
 })
 export class BlogpostModule {}
