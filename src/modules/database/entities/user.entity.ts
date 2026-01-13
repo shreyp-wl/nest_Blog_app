@@ -4,7 +4,7 @@ import { USER_ROLES } from '../../../user/user-types';
 import { RoleApproval } from './role-management.entity';
 import { BlogpostEntity } from './blogpost.entity';
 
-@Entity()
+@Entity('user')
 export class UserEntity extends BaseEntity {
   @Column({ unique: true, nullable: false, select: true })
   userName: string;
