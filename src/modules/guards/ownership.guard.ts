@@ -12,6 +12,8 @@ import { RequestWithUser } from 'src/common/interfaces/request-with-user.interfa
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { UserEntity } from '../database/entities/user.entity';
 import { USER_ROLES } from 'src/user/user-types';
+import { OWNERSHIP_GUARD_BLOG_POST_SELECT } from 'src/blogpost/blogpost.constants';
+import { OWNERSHIP_GUARD_USER_SELECT } from 'src/user/user.constants';
 
 export class OwnershipGuard implements CanActivate {
   constructor(
@@ -30,15 +32,21 @@ export class OwnershipGuard implements CanActivate {
       throw new UnauthorizedException(ERROR_MESSAGES.UNAUTHORIZED);
     }
 
-    const user = await this.userRepository.findOne({
-      where: { id: decoded.id },
-      select: ['id', 'role'],
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .select(OWNERSHIP_GUARD_USER_SELECT)
+      .where('user.id = :id', {
+        id: decoded.id,
+      })
+      .getOne();
 
-    const post = await this.blogPostRepository.findOne({
-      where: { id: postId },
-      select: ['authorId', 'id'],
-    });
+    const post = await this.blogPostRepository
+      .createQueryBuilder('post')
+      .select(OWNERSHIP_GUARD_BLOG_POST_SELECT)
+      .where('post.id = :id', {
+        id: postId,
+      })
+      .getOne();
 
     if (!post) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);

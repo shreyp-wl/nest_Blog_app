@@ -15,11 +15,11 @@ import { SearchService } from './search.service';
   providers: [
     BlogpostService,
     BlogpostEntity,
+    SearchService,
     AuthGuard,
     OwnershipGuard,
     AuthUtils,
   ],
-  providers: [BlogpostService, SearchService, BlogpostEntity],
   exports: [BlogpostEntity],
 })
 export class BlogpostModule {}

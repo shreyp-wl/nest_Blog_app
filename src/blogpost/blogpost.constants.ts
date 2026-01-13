@@ -6,3 +6,5 @@ export const BLOG_POST_SELECT = [
   'post.slug',
   'post.status',
 ];
+
+export const OWNERSHIP_GUARD_BLOG_POST_SELECT = ['post.authorId', 'post.id'];
