@@ -1,11 +1,11 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base-entity';
-import { userRoles } from '../../../user/user-types';
+import { USER_ROLES } from '../../../user/user-types';
 import { RoleApproval } from './role-management.entity';
 import { BlogpostEntity } from './blogpost.entity';
 
-@Entity()
-export class User extends BaseEntity {
+@Entity('user')
+export class UserEntity extends BaseEntity {
   @Column({ unique: true, nullable: false, select: true })
   userName: string;
 
@@ -35,9 +35,9 @@ export class User extends BaseEntity {
   isActive: boolean;
 
   @Column({
-    default: userRoles.READER,
+    default: USER_ROLES.READER,
   })
-  role: userRoles;
+  role: USER_ROLES;
 
   @Column({
     nullable: true,

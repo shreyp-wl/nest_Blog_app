@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { User } from './entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -27,18 +27,18 @@ export class BaseEntity {
   createdBy?: string;
 
   @Exclude()
-  @ManyToOne('User', { nullable: true })
+  @ManyToOne('UserEntity', { nullable: true })
   @JoinColumn({ name: 'createdBy' })
-  creator?: User;
+  creator?: UserEntity;
 
   @Exclude()
   @Column({ nullable: true })
   updatedBy?: string;
 
   @Exclude()
-  @ManyToOne('User', { nullable: true })
+  @ManyToOne('UserEntity', { nullable: true })
   @JoinColumn({ name: 'updatedBy' })
-  updater?: User;
+  updater?: UserEntity;
 
   @Exclude()
   @DeleteDateColumn({

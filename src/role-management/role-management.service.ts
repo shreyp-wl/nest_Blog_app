@@ -9,8 +9,8 @@ import {
   RoleApprovalStatus,
 } from 'src/modules/database/entities/role-management.entity';
 import { Repository } from 'typeorm';
-import { userRoles } from 'src/user/user-types';
-import { User } from 'src/modules/database/entities/user.entity';
+import { USER_ROLES } from 'src/user/user-types';
+import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { ID_SELECT_FIELDS } from 'src/user/user.constants';
 
@@ -19,11 +19,11 @@ export class RoleManagementService {
   constructor(
     @InjectRepository(RoleApproval)
     private readonly roleApprovalRepository: Repository<RoleApproval>,
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   //request upgrade
-  async requestUpdgrade(requestedRole: userRoles, id: string): Promise<void> {
+  async requestUpdgrade(requestedRole: USER_ROLES, id: string): Promise<void> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .select(ID_SELECT_FIELDS)

@@ -8,6 +8,7 @@ import {
   Delete,
   Res,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogpostService } from './blogpost.service';
 import { CreateBlogPostDto, UpdateBlogPostDto } from './dto/blogpost.dto';
@@ -20,6 +21,10 @@ import { GetAllBlogPostResponse } from './blogpost.resonse';
 import { BLOG_POST_ROUTES, SEARCH_ROUTES } from 'src/constants/routes';
 import responseUtils from 'src/utils/response.utils';
 import type { Response } from 'express';
+import { AuthGuard } from 'src/modules/guards/auth.guard';
+import { RolesGuard } from 'src/modules/guards/role.guard';
+import { USER_ROLES } from 'src/user/user-types';
+import { OwnershipGuard } from 'src/modules/guards/ownership.guard';
 import { SearchService } from './search.service';
 import { SearchBlogPostDto } from './dto/search.dto';
 import { SearchResponse } from './search.response';
@@ -31,6 +36,7 @@ export class BlogpostController {
     private readonly searchService: SearchService,
   ) {}
 
+  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   @Post(BLOG_POST_ROUTES.CREATE)
   @ApiSwaggerResponse(MessageResponse, {
     status: StatusCodes.CREATED,
@@ -112,6 +118,7 @@ export class BlogpostController {
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR), OwnershipGuard)
   @ApiSwaggerResponse(MessageResponse)
   @Patch(BLOG_POST_ROUTES.PUBLISH)
   publish(@Res() res: Response, @Param('id') id: string) {

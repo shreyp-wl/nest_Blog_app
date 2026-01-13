@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base-entity';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import { BLOG_POST_STATUS } from '../../../blogpost/blogpost-types';
 
 @Entity('blogpost')
@@ -30,13 +30,13 @@ export class BlogpostEntity extends BaseEntity {
   })
   authorId: string;
 
-  @ManyToOne('User', {
+  @ManyToOne('UserEntity', {
     nullable: true,
   })
   @JoinColumn({
     name: 'authorId',
   })
-  user?: User;
+  user?: UserEntity;
 
   @Column({
     type: 'enum',

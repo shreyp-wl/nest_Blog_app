@@ -1,6 +1,6 @@
 import { BaseEntity } from '../base-entity';
-import { User } from './user.entity';
-import { userRoles } from '../../../user/user-types';
+import { UserEntity } from './user.entity';
+import { USER_ROLES } from '../../../user/user-types';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 export enum RoleApprovalStatus {
@@ -14,14 +14,14 @@ export class RoleApproval extends BaseEntity {
   @Column()
   userId: string;
 
-  @ManyToOne('User', { nullable: true })
+  @ManyToOne('UserEntity', { nullable: true })
   @JoinColumn({ name: 'userId' })
-  user?: User;
+  user?: UserEntity;
 
   @Column({
     nullable: false,
   })
-  requestedRole: userRoles;
+  requestedRole: USER_ROLES;
 
   @Column({
     default: RoleApprovalStatus.PENDING,

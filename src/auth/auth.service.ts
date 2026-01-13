@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/modules/database/entities/user.entity';
+import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { AuthUtils } from 'src/utils/auth.utils';
 import { Repository } from 'typeorm';
 import {
@@ -23,8 +23,8 @@ import {
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
     private readonly authUtils: AuthUtils,
   ) {}
 
