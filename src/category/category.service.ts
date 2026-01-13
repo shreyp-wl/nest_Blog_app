@@ -45,12 +45,12 @@ export class CategoryService {
   async findAll({ page, limit, isPagination }: paginationInput) {
     const qb = this.categoryRepository.createQueryBuilder('category');
     qb.select(CATEGORY_SELECT);
-    const [items, total] = await qb.getManyAndCount();
 
     if (isPagination) {
       const offSet = getOffset(page, limit);
       qb.skip(offSet).take(limit);
     }
+    const [items, total] = await qb.getManyAndCount();
     const result = getPageinationMeta({ items, total, page, limit });
     return result;
   }
