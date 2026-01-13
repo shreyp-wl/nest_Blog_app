@@ -1,5 +1,5 @@
 import { BaseEntity } from '../base-entity';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import { USER_ROLES } from '../../../user/user-types';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
@@ -16,7 +16,7 @@ export class RoleApproval extends BaseEntity {
 
   @ManyToOne('User', { nullable: true })
   @JoinColumn({ name: 'userId' })
-  user?: User;
+  user?: UserEntity;
 
   @Column({
     nullable: false,

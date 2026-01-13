@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../modules/database/entities/user.entity';
+import { UserEntity } from '../modules/database/entities/user.entity';
 import { Repository } from 'typeorm';
 import { updateUserParams } from './user-types';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
@@ -15,7 +15,7 @@ import {
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   async findAll(
@@ -38,7 +38,7 @@ export class UserService {
     return result;
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<UserEntity> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .select(USER_SELECT_FIELDS)

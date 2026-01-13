@@ -9,13 +9,13 @@ import {
 import { Repository } from 'typeorm';
 import { USER_ROLES } from 'src/user/user-types';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/modules/database/entities/user.entity';
+import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
 
 @Injectable()
 export class AccessRoleGuard implements CanActivate {
   constructor(
-    protected readonly userRepository: Repository<User>,
+    protected readonly userRepository: Repository<UserEntity>,
     protected readonly allowedRoles: USER_ROLES[],
   ) {}
 
@@ -55,8 +55,8 @@ export const RolesGuard = (...roles: USER_ROLES[]): Type<any> => {
   @Injectable()
   class RolesGuardWithArgs extends AccessRoleGuard {
     constructor(
-      @InjectRepository(User)
-      userRepository: Repository<User>,
+      @InjectRepository(UserEntity)
+      userRepository: Repository<UserEntity>,
     ) {
       super(userRepository, roles);
     }

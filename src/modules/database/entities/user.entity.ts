@@ -5,7 +5,7 @@ import { RoleApproval } from './role-management.entity';
 import { BlogpostEntity } from './blogpost.entity';
 
 @Entity()
-export class User extends BaseEntity {
+export class UserEntity extends BaseEntity {
   @Column({ unique: true, nullable: false, select: true })
   userName: string;
 
