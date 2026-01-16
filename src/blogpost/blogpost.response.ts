@@ -1,8 +1,9 @@
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { PaginationMetaResponse } from 'src/common/responses/pagination.response';
 import { ApiPropertyWritable } from 'src/modules/swagger/swagger.writable.decorator';
 import { BLOG_POST_STATUS } from './blogpost-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BlogpostEntity } from 'src/modules/database/entities/blogpost.entity';
 
 class AttachmentResponseForBlogPost {
   @Expose()
@@ -10,6 +11,42 @@ class AttachmentResponseForBlogPost {
     example: 'url_of_your image',
   })
   url: string;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'url_of_your image',
+  })
+  publicId: string;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'url_of_your image',
+  })
+  postId: string;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'url_of_your image',
+  })
+  blogPost: BlogpostEntity;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'af4b-b072d134a386',
+  })
+  id: string;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'blog-post-123456',
+  })
+  createdAt: Date;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'blog-post-123456',
+  })
+  updatedAt: Date;
 }
 
 export class BlogPostResponse {
@@ -67,6 +104,12 @@ export class BlogPostResponse {
     example: 'blog-post-123456',
   })
   createdAt: Date;
+
+  @Exclude()
+  @ApiPropertyWritable({
+    example: 'blog-post-123456',
+  })
+  updatedAt: Date;
 
   @Expose()
   @ApiPropertyWritable({ type: [AttachmentResponseForBlogPost] })

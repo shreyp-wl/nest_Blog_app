@@ -93,8 +93,21 @@ export class BlogpostService {
     return result;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} blogpost`;
+  async findOne(slug: string) {
+    const result = await this.blogPostRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.attachments', 'attachment')
+      .select(GET_ALL_BLOG_POST_SELECT)
+      .where('post.slug = :slug', {
+        slug,
+      })
+      .getOne();
+
+    if (!result) {
+      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    return result;
   }
 
   async update(id: string, updateBlogPostInput: UpdateBlogPostInput) {

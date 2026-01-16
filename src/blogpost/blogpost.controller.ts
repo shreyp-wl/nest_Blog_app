@@ -19,7 +19,7 @@ import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
 import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { StatusCodes } from 'http-status-codes';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { GetAllBlogPostResponse } from './blogpost.response';
+import { BlogPostResponse, GetAllBlogPostResponse } from './blogpost.response';
 import { BLOG_POST_ROUTES, SEARCH_ROUTES } from 'src/constants/routes';
 import responseUtils from 'src/utils/response.utils';
 import type { Response } from 'express';
@@ -89,6 +89,22 @@ export class BlogpostController {
       return responseUtils.success(res, {
         data: result,
         transformWith: GetAllBlogPostResponse,
+      });
+    } catch (error) {
+      return responseUtils.error({ res, error });
+    }
+  }
+
+  @Get(BLOG_POST_ROUTES.GET_ONE)
+  @ApiSwaggerResponse(BlogPostResponse, {
+    status: StatusCodes.OK,
+  })
+  async findOne(@Res() res: Response, @Param('slug') slug: string) {
+    try {
+      const result = await this.blogpostService.findOne(slug);
+      return responseUtils.success(res, {
+        data: result,
+        transformWith: BlogPostResponse,
       });
     } catch (error) {
       return responseUtils.error({ res, error });
