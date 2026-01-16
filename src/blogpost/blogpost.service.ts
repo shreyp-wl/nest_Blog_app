@@ -1,8 +1,3 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlogpostEntity } from 'src/modules/database/entities/blogpost.entity';
 import { Repository } from 'typeorm';
@@ -10,8 +5,17 @@ import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { generateSlug } from 'src/utils/blogpost.utils';
 import { SORT_ORDER, SORTBY } from 'src/common/enums';
 import { paginationMeta } from 'src/common/interfaces/pagination.interfaces';
-import { BLOG_POST_SELECT } from './blogpost.constants';
-
+import { GET_ALL_BLOG_POST_SELECT } from './blogpost.constants';
+import { BLOG_POST_STATUS } from './blogpost-types';
+import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
+import { UploadsService } from 'src/uploads/uploads.service';
+import { UploadResult } from 'src/uploads/upload.interface';
+import { CategoryEntity } from 'src/modules/database/entities/category.entity';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   getOffset,
   getPageinationMeta,
@@ -20,11 +24,6 @@ import {
   CreateBlogPostInput,
   UpdateBlogPostInput,
 } from './interfaces/blogpost.interface';
-import { BLOG_POST_STATUS } from './blogpost-types';
-import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
-import { UploadsService } from 'src/uploads/uploads.service';
-import { UploadResult } from 'src/uploads/upload.interface';
-import { CategoryEntity } from 'src/modules/database/entities/category.entity';
 
 @Injectable()
 export class BlogpostService {
@@ -80,7 +79,8 @@ export class BlogpostService {
   ): Promise<paginationMeta> {
     const queryBuilder = this.blogPostRepository
       .createQueryBuilder('post')
-      .select(BLOG_POST_SELECT)
+      .leftJoin('post.attachments', 'attachment')
+      .select(GET_ALL_BLOG_POST_SELECT)
       .orderBy(`post.${SORTBY.CREATED_AT}`, SORT_ORDER.DESC);
 
     if (isPagination) {

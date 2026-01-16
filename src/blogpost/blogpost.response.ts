@@ -4,6 +4,14 @@ import { ApiPropertyWritable } from 'src/modules/swagger/swagger.writable.decora
 import { BLOG_POST_STATUS } from './blogpost-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
+class AttachmentResponseForBlogPost {
+  @Expose()
+  @ApiPropertyWritable({
+    example: 'url_of_your image',
+  })
+  url: string;
+}
+
 export class BlogPostResponse {
   @Expose()
   @ApiPropertyWritable({
@@ -37,6 +45,12 @@ export class BlogPostResponse {
 
   @Expose()
   @ApiPropertyWritable({
+    example: 'af4b-b072d134a386',
+  })
+  categoryId: string;
+
+  @Expose()
+  @ApiPropertyWritable({
     example: 'blog-post-123456',
   })
   slug: string;
@@ -47,6 +61,17 @@ export class BlogPostResponse {
     example: BLOG_POST_STATUS.DRAFT,
   })
   status: BLOG_POST_STATUS;
+
+  @Expose()
+  @ApiPropertyWritable({
+    example: 'blog-post-123456',
+  })
+  createdAt: Date;
+
+  @Expose()
+  @ApiPropertyWritable({ type: [AttachmentResponseForBlogPost] })
+  @Type(() => AttachmentResponseForBlogPost)
+  attachments: AttachmentResponseForBlogPost[];
 }
 
 export class GetAllBlogPostResponse {

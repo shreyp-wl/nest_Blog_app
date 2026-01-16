@@ -19,7 +19,7 @@ import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
 import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { StatusCodes } from 'http-status-codes';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { GetAllBlogPostResponse } from './blogpost.resonse';
+import { GetAllBlogPostResponse } from './blogpost.response';
 import { BLOG_POST_ROUTES, SEARCH_ROUTES } from 'src/constants/routes';
 import responseUtils from 'src/utils/response.utils';
 import type { Response } from 'express';
