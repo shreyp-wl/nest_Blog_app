@@ -7,7 +7,8 @@ export interface CreateBlogPostInput {
 }
 
 export interface UpdateBlogPostInput {
-  title: string;
-  content: string;
+  title?: string;
+  content?: string;
   summary?: string;
+  categoryId?: string;
 }

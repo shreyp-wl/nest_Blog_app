@@ -111,19 +111,34 @@ export class BlogpostService {
   }
 
   async update(id: string, updateBlogPostInput: UpdateBlogPostInput) {
-    const result = await this.blogPostRepository.preload({
+    console.log('reached here', updateBlogPostInput);
+    if (updateBlogPostInput.categoryId) {
+      const existingCategory = await this.categoryRepository
+        .createQueryBuilder('category')
+        .where('category.id = :id', {
+          id: updateBlogPostInput.categoryId,
+        })
+        .getOne();
+
+      if (!existingCategory) {
+        throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+      }
+    }
+    const blogPost = await this.blogPostRepository.preload({
       id: id,
       ...updateBlogPostInput,
     });
 
-    if (!result) {
+    if (!blogPost) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
 
-    const newSlug = generateSlug(updateBlogPostInput.title, id);
-    result.slug = newSlug;
+    if (updateBlogPostInput.title) {
+      const newSlug = generateSlug(updateBlogPostInput.title, id);
+      blogPost.slug = newSlug;
+    }
 
-    await this.blogPostRepository.save(result);
+    await this.blogPostRepository.save(blogPost);
   }
 
   async remove(id: string) {

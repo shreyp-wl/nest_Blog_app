@@ -116,10 +116,15 @@ export class BlogpostController {
   async update(
     @Res() res: Response,
     @Param('id') id: string,
-    @Body() { title, content, summary }: UpdateBlogPostDto,
+    @Body() { title, content, summary, categoryId }: UpdateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.update(id, { title, content, summary });
+      await this.blogpostService.update(id, {
+        title,
+        content,
+        summary,
+        categoryId,
+      });
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.UPDATED,
