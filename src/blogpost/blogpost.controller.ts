@@ -9,6 +9,8 @@ import {
   Res,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { BlogpostService } from './blogpost.service';
 import { CreateBlogPostDto, UpdateBlogPostDto } from './dto/blogpost.dto';
@@ -29,6 +31,9 @@ import { SearchService } from './search.service';
 import { SearchBlogPostDto } from './dto/search.dto';
 import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
+import { FILE_NAME, MAX_UPLOAD_COUNT } from 'src/constants/upload.constants';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { uploadOptions } from 'src/config/upload.config';
 
 @ApiTags(BLOG_POST_ROUTES.BLOG_POST)
 @Controller(BLOG_POST_ROUTES.BLOG_POST)
@@ -38,6 +43,7 @@ export class BlogpostController {
     private readonly searchService: SearchService,
   ) {}
 
+  @UseInterceptors(FilesInterceptor(FILE_NAME, MAX_UPLOAD_COUNT, uploadOptions))
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   @Post(BLOG_POST_ROUTES.CREATE)
   @ApiSwaggerResponse(MessageResponse, {
@@ -45,10 +51,15 @@ export class BlogpostController {
   })
   async create(
     @Res() res: Response,
-    @Body() { title, content, summary, authorId }: CreateBlogPostDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body()
+    { title, content, summary, authorId, categoryId }: CreateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.create({ title, content, summary, authorId });
+      await this.blogpostService.create(
+        { title, content, summary, authorId, categoryId },
+        files,
+      );
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.CREATED,

@@ -3,6 +3,7 @@ export interface CreateBlogPostInput {
   content: string;
   summary?: string;
   authorId: string;
+  categoryId?: string;
 }
 
 export interface UpdateBlogPostInput {

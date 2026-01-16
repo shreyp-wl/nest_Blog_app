@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsOptional,
@@ -64,6 +64,16 @@ export class CreateBlogPostDto {
   @TrimString()
   @IsUUID()
   authorId: string;
+
+  //categoryId
+  @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'categoryId',
+  })
+  @IsOptional()
+  @TrimString()
+  @IsUUID()
+  categoryId: string;
 }
 
 export class UpdateBlogPostDto {
