@@ -111,7 +111,6 @@ export class BlogpostService {
   }
 
   async update(id: string, updateBlogPostInput: UpdateBlogPostInput) {
-    console.log('reached here', updateBlogPostInput);
     if (updateBlogPostInput.categoryId) {
       const existingCategory = await this.categoryRepository
         .createQueryBuilder('category')
@@ -124,6 +123,22 @@ export class BlogpostService {
         throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
       }
     }
+    let slug: string = '';
+
+    if (updateBlogPostInput.title) {
+      slug = generateSlug(updateBlogPostInput.title, id);
+      const existing = await this.blogPostRepository
+        .createQueryBuilder('post')
+        .where('post.title = :title OR post.slug = :slug', {
+          title: updateBlogPostInput.title,
+          slug,
+        })
+        .getOne();
+
+      if (existing) {
+        throw new ConflictException(ERROR_MESSAGES.CONFLICT);
+      }
+    }
     const blogPost = await this.blogPostRepository.preload({
       id: id,
       ...updateBlogPostInput,
@@ -134,8 +149,7 @@ export class BlogpostService {
     }
 
     if (updateBlogPostInput.title) {
-      const newSlug = generateSlug(updateBlogPostInput.title, id);
-      blogPost.slug = newSlug;
+      blogPost.slug = slug;
     }
 
     await this.blogPostRepository.save(blogPost);
