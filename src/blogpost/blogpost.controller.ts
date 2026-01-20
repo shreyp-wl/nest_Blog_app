@@ -9,6 +9,8 @@ import {
   Res,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { BlogpostService } from './blogpost.service';
 import { CreateBlogPostDto, UpdateBlogPostDto } from './dto/blogpost.dto';
@@ -18,9 +20,9 @@ import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { StatusCodes } from 'http-status-codes';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import {
-  GetAllBlogPostResponse,
+  BlogPostResponse, GetAllBlogPostResponse,
   GetAllCommentesOnPostResponse,
-} from './blogpost.resonse';
+} from './blogpost.response';
 import { BLOG_POST_ROUTES, SEARCH_ROUTES } from 'src/constants/routes';
 import responseUtils from 'src/utils/response.utils';
 import type { Response } from 'express';
@@ -33,6 +35,9 @@ import { SearchBlogPostDto } from './dto/search.dto';
 import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
 import { ProcessCommentDto } from 'src/comments/dto/comment.dto';
+import { FILE_NAME, MAX_UPLOAD_COUNT } from 'src/constants/upload.constants';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { uploadOptions } from 'src/config/upload.config';
 
 @ApiTags(BLOG_POST_ROUTES.BLOG_POST)
 @Controller(BLOG_POST_ROUTES.BLOG_POST)
@@ -42,6 +47,7 @@ export class BlogpostController {
     private readonly searchService: SearchService,
   ) {}
 
+  @UseInterceptors(FilesInterceptor(FILE_NAME, MAX_UPLOAD_COUNT, uploadOptions))
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   @Post(BLOG_POST_ROUTES.CREATE)
   @ApiSwaggerResponse(MessageResponse, {
@@ -49,10 +55,15 @@ export class BlogpostController {
   })
   async create(
     @Res() res: Response,
-    @Body() { title, content, summary, authorId }: CreateBlogPostDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body()
+    { title, content, summary, authorId, categoryId }: CreateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.create({ title, content, summary, authorId });
+      await this.blogpostService.create(
+        { title, content, summary, authorId, categoryId },
+        files,
+      );
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.CREATED,
@@ -88,15 +99,36 @@ export class BlogpostController {
     }
   }
 
+  @Get(BLOG_POST_ROUTES.GET_ONE)
+  @ApiSwaggerResponse(BlogPostResponse, {
+    status: StatusCodes.OK,
+  })
+  async findOne(@Res() res: Response, @Param('slug') slug: string) {
+    try {
+      const result = await this.blogpostService.findOne(slug);
+      return responseUtils.success(res, {
+        data: result,
+        transformWith: BlogPostResponse,
+      });
+    } catch (error) {
+      return responseUtils.error({ res, error });
+    }
+  }
+
   @ApiSwaggerResponse(MessageResponse)
   @Patch(BLOG_POST_ROUTES.UPDATE)
   async update(
     @Res() res: Response,
     @Param('id') id: string,
-    @Body() { title, content, summary }: UpdateBlogPostDto,
+    @Body() { title, content, summary, categoryId }: UpdateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.update(id, { title, content, summary });
+      await this.blogpostService.update(id, {
+        title,
+        content,
+        summary,
+        categoryId,
+      });
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.UPDATED,
