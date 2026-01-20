@@ -30,6 +30,7 @@ import { BLOG_POST_STATUS } from './blogpost-types';
 import { COMMENT_STATUS } from 'src/comments/comments-types';
 import { CommentEntity } from 'src/modules/database/entities/comment.entity';
 import { findExistingEntity } from 'src/utils/db.utils';
+import { CategoryEntity } from 'src/modules/database/entities/category.entity';
 
 @Injectable()
 export class BlogpostService {
@@ -38,6 +39,8 @@ export class BlogpostService {
     private readonly blogPostRepository: Repository<BlogpostEntity>,
     @InjectRepository(CommentEntity)
     private readonly commentRepository: Repository<CommentEntity>,
+    @InjectRepository(CategoryEntity)
+    private readonly categoryRepository: Repository<CategoryEntity>,
   ) {}
 
   async create(createBlogPostInput: CreateBlogPostInput): Promise<void> {
@@ -50,9 +53,22 @@ export class BlogpostService {
     }
 
     const blogPost = this.blogPostRepository.create(createBlogPostInput);
-    const slug = generateSlug(blogPost.title, blogPost.id);
 
-    blogPost.slug = slug;
+    if (createBlogPostInput.categoryId) {
+      const existingCategory = await findExistingEntity(
+        this.categoryRepository,
+        {
+          id: createBlogPostInput.categoryId,
+        },
+      );
+
+      if (!existingCategory) {
+        throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+      }
+      blogPost.categoryId = createBlogPostInput.categoryId;
+    }
+
+    blogPost.slug = generateSlug(blogPost.title);
 
     await this.blogPostRepository.save(blogPost);
   }

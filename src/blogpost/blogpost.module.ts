@@ -10,10 +10,16 @@ import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { SearchService } from './search.service';
 import { CommentEntity } from 'src/modules/database/entities/comment.entity';
 import { CommentsService } from 'src/comments/comments.service';
+import { CategoryEntity } from 'src/modules/database/entities/category.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BlogpostEntity, UserEntity, CommentEntity]),
+    TypeOrmModule.forFeature([
+      BlogpostEntity,
+      UserEntity,
+      CommentEntity,
+      CategoryEntity,
+    ]),
   ],
   controllers: [BlogpostController],
   providers: [

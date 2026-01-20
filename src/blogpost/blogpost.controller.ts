@@ -34,6 +34,8 @@ import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCommentDto } from 'src/comments/dto/comment.dto';
 import { CommentsService } from 'src/comments/comments.service';
+import { type TokenPayload } from 'src/auth/auth-types';
+import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
 
 @ApiTags(BLOG_POST_ROUTES.BLOG_POST)
 @Controller(BLOG_POST_ROUTES.BLOG_POST)
@@ -50,11 +52,18 @@ export class BlogpostController {
     status: StatusCodes.CREATED,
   })
   async create(
+    @CurrentUser() user: TokenPayload,
     @Res() res: Response,
-    @Body() { title, content, summary, authorId }: CreateBlogPostDto,
+    @Body() { title, content, summary, categoryId }: CreateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.create({ title, content, summary, authorId });
+      await this.blogpostService.create({
+        title,
+        categoryId,
+        content,
+        summary,
+        authorId: user.id,
+      });
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.CREATED,
