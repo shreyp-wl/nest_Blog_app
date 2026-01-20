@@ -30,28 +30,6 @@ import { CommentResponse, GetAllCommentResponse } from './comment.response';
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Post(COMMENT_ROUTES.CREATE)
-  @ApiSwaggerResponse(MessageResponse, {
-    status: StatusCodes.CREATED,
-  })
-  async create(
-    @Res() res: Response,
-    @Body() { content, authorId, postId }: CreateCommentDto,
-  ) {
-    try {
-      await this.commentsService.create({ content, authorId, postId });
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.CREATED,
-        },
-        transformWith: MessageResponse,
-        status: StatusCodes.CREATED,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
-  }
-
   @Get(COMMENT_ROUTES.GET_ALL)
   @ApiSwaggerResponse(GetAllCommentResponse)
   async findAll(

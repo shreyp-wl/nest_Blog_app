@@ -9,6 +9,7 @@ import { AuthUtils } from 'src/utils/auth.utils';
 import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { SearchService } from './search.service';
 import { CommentEntity } from 'src/modules/database/entities/comment.entity';
+import { CommentsService } from 'src/comments/comments.service';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CommentEntity } from 'src/modules/database/entities/comment.entity';
   controllers: [BlogpostController],
   providers: [
     BlogpostService,
+    CommentsService,
     BlogpostEntity,
     SearchService,
     AuthGuard,

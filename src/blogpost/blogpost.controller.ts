@@ -32,7 +32,11 @@ import { SearchService } from './search.service';
 import { SearchBlogPostDto } from './dto/search.dto';
 import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
-import { ProcessCommentDto } from 'src/comments/dto/comment.dto';
+import {
+  CreateCommentDto,
+  ProcessCommentDto,
+} from 'src/comments/dto/comment.dto';
+import { CommentsService } from 'src/comments/comments.service';
 
 @ApiTags(BLOG_POST_ROUTES.BLOG_POST)
 @Controller(BLOG_POST_ROUTES.BLOG_POST)
@@ -40,6 +44,7 @@ export class BlogpostController {
   constructor(
     private readonly blogpostService: BlogpostService,
     private readonly searchService: SearchService,
+    private readonly commentService: CommentsService,
   ) {}
 
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
@@ -157,6 +162,29 @@ export class BlogpostController {
     }
   }
 
+  @Post(BLOG_POST_ROUTES.CREATE_COMMENT)
+  @ApiSwaggerResponse(MessageResponse, {
+    status: StatusCodes.CREATED,
+  })
+  async createComment(
+    @Res() res: Response,
+    @Param('id') postId: string,
+    @Body() { content, authorId }: CreateCommentDto,
+  ) {
+    try {
+      await this.commentService.create({ content, authorId, postId });
+      return responseUtils.success(res, {
+        data: {
+          message: SUCCESS_MESSAGES.CREATED,
+        },
+        transformWith: MessageResponse,
+        status: StatusCodes.CREATED,
+      });
+    } catch (error) {
+      return responseUtils.error({ res, error });
+    }
+  }
+
   @Get(BLOG_POST_ROUTES.GET_COMMENTS_ON_POST)
   @ApiSwaggerResponse(GetAllCommentesOnPostResponse)
   async getCommentsOnPost(
@@ -181,7 +209,7 @@ export class BlogpostController {
 
   @Patch(BLOG_POST_ROUTES.APPROVE_COMMENT)
   @ApiSwaggerResponse(MessageResponse)
-  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR), OwnershipGuard)
+  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   async processComment(
     @Res() res: Response,
     @Body() { isApproved }: ProcessCommentDto,
