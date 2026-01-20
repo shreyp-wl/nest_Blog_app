@@ -32,10 +32,7 @@ import { SearchService } from './search.service';
 import { SearchBlogPostDto } from './dto/search.dto';
 import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  CreateCommentDto,
-  ProcessCommentDto,
-} from 'src/comments/dto/comment.dto';
+import { CreateCommentDto } from 'src/comments/dto/comment.dto';
 import { CommentsService } from 'src/comments/comments.service';
 
 @ApiTags(BLOG_POST_ROUTES.BLOG_POST)
@@ -204,27 +201,6 @@ export class BlogpostController {
       });
     } catch (error) {
       return responseUtils.error({ res, error });
-    }
-  }
-
-  @Patch(BLOG_POST_ROUTES.APPROVE_COMMENT)
-  @ApiSwaggerResponse(MessageResponse)
-  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
-  async processComment(
-    @Res() res: Response,
-    @Body() { isApproved }: ProcessCommentDto,
-    @Param('commentId') commentId: string,
-  ) {
-    try {
-      await this.blogpostService.processComment(commentId, isApproved);
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.SUCCESS,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ error, res });
     }
   }
 }

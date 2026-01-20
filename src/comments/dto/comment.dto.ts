@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsNotEmpty,
+  IsOptional,
   IsUUID,
   MaxLength,
   MinLength,
@@ -51,7 +52,7 @@ export class UpdateCommentDto {
     example: 'Here is the new Comment!',
     description: 'content of you blogpost',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @TrimString()
   @MinLength(1, {
     message: 'content length must be greatet than $constraint1 characters.',
@@ -60,13 +61,12 @@ export class UpdateCommentDto {
     message: 'comment can only be $constraint1 characters long.',
   })
   content: string;
-}
 
-export class ProcessCommentDto {
   @ApiProperty({
     example: true,
     description: 'specify wherether comment is approved or not',
   })
+  @IsOptional()
   @IsBoolean()
-  isApproved: boolean;
+  isApproved?: boolean;
 }

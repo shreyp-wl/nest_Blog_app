@@ -124,21 +124,6 @@ export class BlogpostService {
     await this.blogPostRepository.save(blogPost);
   }
 
-  async processComment(commentId: string, isApproved: boolean) {
-    const status = isApproved
-      ? COMMENT_STATUS.APPROVED
-      : COMMENT_STATUS.REJECTED;
-    const comment = await this.commentRepository.preload({
-      id: commentId,
-      status,
-    });
-    if (!comment) {
-      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
-    }
-
-    await this.commentRepository.save(comment);
-  }
-
   async getCommentsOnPost(
     id: string,
     { page, limit, isPagination }: paginationInput,
