@@ -15,10 +15,19 @@ import {
   paginationMeta,
 } from 'src/common/interfaces/pagination.interfaces';
 import {
-  BLOG_POST_SELECT,
+  GET_ALL_BLOG_POST_SELECT,
   GET_COMMENTS_ON_POST_SELECT,
 } from './blogpost.constants';
-
+import { BLOG_POST_STATUS } from './blogpost-types';
+import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
+import { UploadsService } from 'src/uploads/uploads.service';
+import { UploadResult } from 'src/uploads/upload.interface';
+import { CategoryEntity } from 'src/modules/database/entities/category.entity';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   getOffset,
   getPageinationMeta,
@@ -27,7 +36,6 @@ import {
   CreateBlogPostInput,
   UpdateBlogPostInput,
 } from './interfaces/blogpost.interface';
-import { BLOG_POST_STATUS } from './blogpost-types';
 import { COMMENT_STATUS } from 'src/comments/comments-types';
 import { CommentEntity } from 'src/modules/database/entities/comment.entity';
 import { findExistingEntity } from 'src/utils/db.utils';
@@ -38,13 +46,21 @@ export class BlogpostService {
   constructor(
     @InjectRepository(BlogpostEntity)
     private readonly blogPostRepository: Repository<BlogpostEntity>,
+    @InjectRepository(AttachmentEntity)
+    private readonly attachmentRepository: Repository<AttachmentEntity>,
+    @InjectRepository(CategoryEntity)
+    private readonly categoryRepository: Repository<CategoryEntity>,
+    private readonly attachmentService: UploadsService,
     @InjectRepository(CommentEntity)
     private readonly commentRepository: Repository<CommentEntity>,
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
   ) {}
 
-  async create(createBlogPostInput: CreateBlogPostInput): Promise<void> {
+  async create(
+    createBlogPostInput: CreateBlogPostInput,
+    files: Express.Multer.File[],
+  ): Promise<void> {
     const existing = await this.blogPostRepository.exists({
       where: { title: createBlogPostInput.title },
     });
@@ -71,7 +87,16 @@ export class BlogpostService {
 
     blogPost.slug = generateSlug(blogPost.title);
 
-    await this.blogPostRepository.save(blogPost);
+      if (!exisingCategory) {
+        throw new NotFoundException('No category exists with provided id');
+      }
+
+      blogPost.categoryId = createBlogPostInput.categoryId;
+    }
+
+    const savedPost = await this.blogPostRepository.save(blogPost);
+
+    await this.saveAttachment(savedPost.id, files);
   }
 
   async findAll(
@@ -81,7 +106,8 @@ export class BlogpostService {
   ): Promise<paginationMeta> {
     const queryBuilder = this.blogPostRepository
       .createQueryBuilder('post')
-      .select(BLOG_POST_SELECT)
+      .leftJoin('post.attachments', 'attachment')
+      .select(GET_ALL_BLOG_POST_SELECT)
       .orderBy(`post.${SORTBY.CREATED_AT}`, SORT_ORDER.DESC);
 
     if (isPagination) {
@@ -94,8 +120,21 @@ export class BlogpostService {
     return result;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} blogpost`;
+  async findOne(slug: string) {
+    const result = await this.blogPostRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.attachments', 'attachment')
+      .select(GET_ALL_BLOG_POST_SELECT)
+      .where('post.slug = :slug', {
+        slug,
+      })
+      .getOne();
+
+    if (!result) {
+      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    return result;
   }
 
   async update(
@@ -202,5 +241,34 @@ export class BlogpostService {
     const [items, total] = await qb.getManyAndCount();
     const result = getPageinationMeta({ items, page, limit, total });
     return result;
+  }
+
+  async saveAttachment(postId: string, files: Express.Multer.File[]) {
+    let uploads: UploadResult[] = [];
+    try {
+      if (files.length) {
+        uploads = (
+          await this.attachmentService.uploadMultipleAttachments(files)
+        ).data;
+      }
+
+      if (uploads.length) {
+        await this.attachmentRepository.save(
+          uploads.map((u) => ({
+            postId,
+            publicId: u.public_id,
+            url: u.secure_url,
+          })),
+        );
+      }
+    } catch (error) {
+      if (uploads.length) {
+        await this.attachmentService.deleteMultipleAttachments(
+          uploads.map((u) => u.public_id),
+        );
+      }
+
+      throw error;
+    }
   }
 }

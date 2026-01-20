@@ -58,25 +58,27 @@ export class CreateBlogPostDto {
   @TrimString()
   summary?: string;
 
-  //category
+  @IsUUID()
+  authorId: string;
+
+  //categoryId
   @ApiProperty({
-    example: 'sflas-sdfsdlj-eruisudf-weorufjh',
-    description: 'Category Id ',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'categoryId',
   })
   @IsOptional()
   @TrimString()
+  @IsUUID()
   categoryId?: string;
 }
 
 export class UpdateBlogPostDto {
   //title
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'New Blog Post',
     description: 'Title of your blogpost',
   })
-  @IsNotEmpty({
-    message: 'Title cannot be empty.',
-  })
+  @IsOptional()
   @MinLength(5, {
     message: 'Title length should be greater than $constraint1 characters.',
   })
@@ -84,23 +86,21 @@ export class UpdateBlogPostDto {
   @MaxLength(150, {
     message: 'Title length should be less than $constraint1 characters.',
   })
-  title: string;
+  title?: string;
 
   //content
-  @ApiProperty({
+  @ApiPropertyOptional({
     example:
       'Learning NestJS can feel overwhelming at first, especially if you are coming from a simple Express background. However, NestJS provides a powerful structure that helps you build scalable and maintainable backend applications. Its modular architecture encourages separation of concerns, making your codebase easier to understand and extend. Features like dependency injection, guards, interceptors, and pipes may seem complex initially, but they solve real problems in larger systems. By starting with small modules and gradually adopting NestJS best practices, you can improve both code quality and developer productivity while building robust APIs that are ready for production use.',
     description: 'Content of your blogpost',
   })
-  @IsNotEmpty({
-    message: 'Content cannot be empty.',
-  })
+  @IsOptional()
   @MinLength(100, {
     message: "A blogpost's content must have atleast $constraint1 characters",
   })
   @TrimString()
   @MaxLength(50_000)
-  content: string;
+  content?: string;
 
   //summary
   @ApiPropertyOptional({
@@ -113,11 +113,12 @@ export class UpdateBlogPostDto {
   summary?: string;
 
   //category
-  @ApiProperty({
-    example: 'sflas-sdfsdlj-eruisudf-weorufjh',
-    description: 'Category Id ',
+  @TrimString()
+  @ApiPropertyOptional({
+    example: 'category',
+    description: 'Category of your blogpost',
   })
   @IsOptional()
-  @TrimString()
+  @IsUUID()
   categoryId?: string;
 }

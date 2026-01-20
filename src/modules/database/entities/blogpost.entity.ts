@@ -3,6 +3,7 @@ import { BaseEntity } from '../base-entity';
 import { UserEntity } from './user.entity';
 import { BLOG_POST_STATUS } from '../../../blogpost/blogpost-types';
 import { CategoryEntity } from './category.entity';
+import { AttachmentEntity } from './attachment.entity';
 import { CommentEntity } from './comment.entity';
 
 @Entity('blogpost')
@@ -60,6 +61,11 @@ export class BlogpostEntity extends BaseEntity {
     name: 'categoryId',
   })
   category?: CategoryEntity;
+
+  @OneToMany(() => AttachmentEntity, (attachment) => attachment.blogPost, {
+    cascade: true,
+  })
+  attachments: AttachmentEntity[];
 
   @OneToMany(() => CommentEntity, (comment) => comment.blogPost, {
     nullable: true,
