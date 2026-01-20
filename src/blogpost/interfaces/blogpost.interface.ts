@@ -9,5 +9,6 @@ export interface CreateBlogPostInput {
 export interface UpdateBlogPostInput {
   title: string;
   content: string;
+  categoryId?: string;
   summary?: string;
 }

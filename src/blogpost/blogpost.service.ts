@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -97,20 +98,54 @@ export class BlogpostService {
     return `This action returns a #${id} blogpost`;
   }
 
-  async update(id: string, updateBlogPostInput: UpdateBlogPostInput) {
-    const result = await this.blogPostRepository.preload({
-      id: id,
-      ...updateBlogPostInput,
-    });
+  async update(
+    userId: string,
+    id: string,
+    updateBlogPostInput: UpdateBlogPostInput,
+  ) {
+    const blogPost = await this.blogPostRepository
+      .createQueryBuilder('post')
+      .where('post.id = :id', {
+        id,
+      })
+      .getOne();
 
-    if (!result) {
+    if (!blogPost) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
 
-    const newSlug = generateSlug(updateBlogPostInput.title, id);
-    result.slug = newSlug;
+    const isOwnerOfPost = blogPost.authorId === userId;
 
-    await this.blogPostRepository.save(result);
+    if (!isOwnerOfPost) {
+      throw new ForbiddenException(ERROR_MESSAGES.FORBIDDEN);
+    }
+
+    if (updateBlogPostInput.content)
+      blogPost.content = updateBlogPostInput.content;
+
+    if (updateBlogPostInput.summary)
+      blogPost.summary = updateBlogPostInput.summary;
+
+    if (updateBlogPostInput.title) {
+      blogPost.title = updateBlogPostInput.title;
+      blogPost.slug = generateSlug(updateBlogPostInput.title, id);
+    }
+
+    if (updateBlogPostInput.categoryId) {
+      const existingCategory = await findExistingEntity(
+        this.categoryRepository,
+        {
+          id: updateBlogPostInput.categoryId,
+        },
+      );
+
+      if (!existingCategory) {
+        throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+      }
+      blogPost.categoryId = updateBlogPostInput.categoryId;
+    }
+
+    await this.blogPostRepository.save(blogPost);
   }
 
   async remove(id: string) {

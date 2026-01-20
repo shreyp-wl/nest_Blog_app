@@ -101,13 +101,20 @@ export class BlogpostController {
 
   @ApiSwaggerResponse(MessageResponse)
   @Patch(BLOG_POST_ROUTES.UPDATE)
+  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   async update(
     @Res() res: Response,
+    @CurrentUser() user: TokenPayload,
     @Param('id') id: string,
-    @Body() { title, content, summary }: UpdateBlogPostDto,
+    @Body() { title, content, summary, categoryId }: UpdateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.update(id, { title, content, summary });
+      await this.blogpostService.update(user.id, id, {
+        title,
+        categoryId,
+        content,
+        summary,
+      });
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.UPDATED,
@@ -120,7 +127,7 @@ export class BlogpostController {
   }
 
   @ApiSwaggerResponse(MessageResponse)
-  @Delete(BLOG_POST_ROUTES.UPDATE)
+  @Delete(BLOG_POST_ROUTES.DELETE)
   remove(@Res() res: Response, @Param('id') id: string) {
     try {
       this.blogpostService.remove(id);

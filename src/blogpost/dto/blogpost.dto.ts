@@ -111,4 +111,13 @@ export class UpdateBlogPostDto {
   @IsOptional()
   @TrimString()
   summary?: string;
+
+  //category
+  @ApiProperty({
+    example: 'sflas-sdfsdlj-eruisudf-weorufjh',
+    description: 'Category Id ',
+  })
+  @IsOptional()
+  @TrimString()
+  categoryId?: string;
 }
