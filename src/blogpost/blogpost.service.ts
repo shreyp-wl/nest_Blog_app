@@ -22,12 +22,6 @@ import { BLOG_POST_STATUS } from './blogpost-types';
 import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { UploadResult } from 'src/uploads/upload.interface';
-import { CategoryEntity } from 'src/modules/database/entities/category.entity';
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import {
   getOffset,
   getPageinationMeta,
@@ -50,21 +44,18 @@ export class BlogpostService {
     private readonly attachmentRepository: Repository<AttachmentEntity>,
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
-    private readonly attachmentService: UploadsService,
     @InjectRepository(CommentEntity)
     private readonly commentRepository: Repository<CommentEntity>,
-    @InjectRepository(CategoryEntity)
-    private readonly categoryRepository: Repository<CategoryEntity>,
+    private readonly attachmentService: UploadsService,
   ) {}
 
   async create(
     createBlogPostInput: CreateBlogPostInput,
     files: Express.Multer.File[],
   ): Promise<void> {
-    const existing = await this.blogPostRepository.exists({
-      where: { title: createBlogPostInput.title },
+    const existing = await findExistingEntity(this.blogPostRepository, {
+      title: createBlogPostInput.title,
     });
-
     if (existing) {
       throw new ConflictException(ERROR_MESSAGES.CONFLICT);
     }
@@ -86,13 +77,6 @@ export class BlogpostService {
     }
 
     blogPost.slug = generateSlug(blogPost.title);
-
-      if (!exisingCategory) {
-        throw new NotFoundException('No category exists with provided id');
-      }
-
-      blogPost.categoryId = createBlogPostInput.categoryId;
-    }
 
     const savedPost = await this.blogPostRepository.save(blogPost);
 

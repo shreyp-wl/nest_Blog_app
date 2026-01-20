@@ -20,7 +20,8 @@ import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { StatusCodes } from 'http-status-codes';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import {
-  BlogPostResponse, GetAllBlogPostResponse,
+  BlogPostResponse,
+  GetAllBlogPostResponse,
   GetAllCommentesOnPostResponse,
 } from './blogpost.response';
 import { BLOG_POST_ROUTES, SEARCH_ROUTES } from 'src/constants/routes';
@@ -38,7 +39,6 @@ import { CreateCommentDto } from 'src/comments/dto/comment.dto';
 import { CommentsService } from 'src/comments/comments.service';
 import { type TokenPayload } from 'src/auth/auth-types';
 import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
-import { ProcessCommentDto } from 'src/comments/dto/comment.dto';
 import { FILE_NAME, MAX_UPLOAD_COUNT } from 'src/constants/upload.constants';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { uploadOptions } from 'src/config/upload.config';
@@ -61,25 +61,21 @@ export class BlogpostController {
   async create(
     @CurrentUser() user: TokenPayload,
     @Res() res: Response,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() { title, content, summary, categoryId }: CreateBlogPostDto,
   ) {
     try {
-      await this.blogpostService.create({
-        title,
-        categoryId,
-        content,
-        summary,
-        authorId: user.id,
-      });
-    @UploadedFiles() files: Express.Multer.File[],
-    @Body()
-    { title, content, summary, authorId, categoryId }: CreateBlogPostDto,
-  ) {
-    try {
       await this.blogpostService.create(
-        { title, content, summary, authorId, categoryId },
+        {
+          title,
+          categoryId,
+          content,
+          summary,
+          authorId: user.id,
+        },
         files,
       );
+
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.CREATED,
