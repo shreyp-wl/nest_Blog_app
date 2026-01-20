@@ -19,3 +19,4 @@ export const GET_COMMENTS_ON_POST_SELECT = [
   'author.id',
   'author.userName',
 ];
+export const SEARCH_QUERY = `(post.title ILIKE :q OR post.content ILIKE :q)`;

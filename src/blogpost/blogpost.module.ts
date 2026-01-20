@@ -7,7 +7,6 @@ import { AuthGuard } from 'src/modules/guards/auth.guard';
 import { OwnershipGuard } from 'src/modules/guards/ownership.guard';
 import { AuthUtils } from 'src/utils/auth.utils';
 import { UserEntity } from 'src/modules/database/entities/user.entity';
-import { SearchService } from './search.service';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
 import { CategoryEntity } from 'src/modules/database/entities/category.entity';
@@ -29,7 +28,6 @@ import { CommentsService } from 'src/comments/comments.service';
     BlogpostService,
     CommentsService,
     BlogpostEntity,
-    SearchService,
     AuthGuard,
     OwnershipGuard,
     AuthUtils,

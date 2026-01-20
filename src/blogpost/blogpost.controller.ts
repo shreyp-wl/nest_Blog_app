@@ -31,7 +31,6 @@ import { AuthGuard } from 'src/modules/guards/auth.guard';
 import { RolesGuard } from 'src/modules/guards/role.guard';
 import { USER_ROLES } from 'src/user/user-types';
 import { OwnershipGuard } from 'src/modules/guards/ownership.guard';
-import { SearchService } from './search.service';
 import { SearchBlogPostDto } from './dto/search.dto';
 import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
@@ -48,7 +47,6 @@ import { uploadOptions } from 'src/config/upload.config';
 export class BlogpostController {
   constructor(
     private readonly blogpostService: BlogpostService,
-    private readonly searchService: SearchService,
     private readonly commentService: CommentsService,
   ) {}
 
@@ -94,13 +92,16 @@ export class BlogpostController {
   })
   async findAll(
     @Res() res: Response,
-    @Query() { page, limit, isPagination }: PaginationDto,
+    @Query() { q, isPagination, page, limit }: SearchBlogPostDto,
   ) {
     try {
       const result = await this.blogpostService.findAll(
-        page,
-        limit,
-        isPagination,
+        {
+          page,
+          limit,
+          isPagination,
+        },
+        q,
       );
       return responseUtils.success(res, {
         data: result,
@@ -187,33 +188,19 @@ export class BlogpostController {
     }
   }
 
-  @ApiSwaggerResponse(SearchResponse, {
-    status: StatusCodes.OK,
-  })
-  @Get(SEARCH_ROUTES.SEARCH)
-  async search(@Res() res: Response, @Query() query: SearchBlogPostDto) {
-    try {
-      const result = await this.searchService.search(query);
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: SearchResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
-  }
-
   @Post(BLOG_POST_ROUTES.CREATE_COMMENT)
   @ApiSwaggerResponse(MessageResponse, {
     status: StatusCodes.CREATED,
   })
+  @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   async createComment(
     @Res() res: Response,
+    @CurrentUser() user: TokenPayload,
     @Param('id') postId: string,
-    @Body() { content, authorId }: CreateCommentDto,
+    @Body() { content }: CreateCommentDto,
   ) {
     try {
-      await this.commentService.create({ content, authorId, postId });
+      await this.commentService.create({ content, authorId: user.id, postId });
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.CREATED,

@@ -23,28 +23,6 @@ export class CreateCommentDto {
     message: 'comment can only be $constraint1 characters long.',
   })
   content: string;
-
-  @ApiProperty({
-    example: 'a24ada78-38ed-42e2-a698-de341f63899b',
-    description: 'authorId',
-  })
-  @TrimString()
-  @IsNotEmpty({
-    message: 'a comment must have an authorId',
-  })
-  @IsUUID()
-  authorId: string;
-
-  @ApiProperty({
-    example: 'b36b841c-89c7-4c2a-82d4-a46395c55699',
-    description: 'postId',
-  })
-  @TrimString()
-  @IsNotEmpty({
-    message: 'a comment must have a postId.',
-  })
-  @IsUUID()
-  postId: string;
 }
 
 export class UpdateCommentDto {

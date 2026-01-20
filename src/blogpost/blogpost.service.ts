@@ -17,6 +17,7 @@ import {
 import {
   GET_ALL_BLOG_POST_SELECT,
   GET_COMMENTS_ON_POST_SELECT,
+  SEARCH_QUERY,
 } from './blogpost.constants';
 import { BLOG_POST_STATUS } from './blogpost-types';
 import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
@@ -84,21 +85,27 @@ export class BlogpostService {
   }
 
   async findAll(
-    page: number,
-    limit: number,
-    isPagination: boolean,
+    { page, limit, isPagination }: paginationInput,
+    q?: string,
   ): Promise<paginationMeta> {
-    const queryBuilder = this.blogPostRepository
+    const qb = this.blogPostRepository
       .createQueryBuilder('post')
       .leftJoin('post.attachments', 'attachment')
-      .select(GET_ALL_BLOG_POST_SELECT)
-      .orderBy(`post.${SORTBY.CREATED_AT}`, SORT_ORDER.DESC);
+      .select(GET_ALL_BLOG_POST_SELECT);
+    if (q) {
+      qb.where(SEARCH_QUERY, {
+        q: `%${q}%`,
+      });
+    }
+    qb.andWhere('post.status = :status', {
+      status: BLOG_POST_STATUS.PUBLISHED,
+    }).orderBy(`post.${SORTBY.CREATED_AT}`, SORT_ORDER.DESC);
 
     if (isPagination) {
       const offset = getOffset(page, limit);
-      queryBuilder.skip(offset).take(limit);
+      qb.skip(offset).take(limit);
     }
-    const [items, total] = await queryBuilder.getManyAndCount();
+    const [items, total] = await qb.getManyAndCount();
     const result = getPageinationMeta({ items, page, limit, total });
 
     return result;

@@ -39,11 +39,7 @@ export class CommentsService {
       status: BLOG_POST_STATUS.PUBLISHED,
     });
 
-    const existingAuthor = await findExistingEntity(this.userRepository, {
-      id: createCommentInput.authorId,
-    });
-
-    if (!existingPost || !existingAuthor) {
+    if (!existingPost) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
     const comment = this.commentRepository.create(createCommentInput);
