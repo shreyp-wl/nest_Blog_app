@@ -1,5 +1,6 @@
 export const AUTH_ROUTES = {
   AUTH: 'auth',
+  ME: 'me',
   LOGIN: 'login',
   REGISTER: 'register',
   REFRESH: 'refresh',
