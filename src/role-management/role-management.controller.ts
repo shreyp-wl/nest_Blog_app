@@ -31,6 +31,7 @@ import { RolesGuard } from 'src/modules/guards/role.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
 import { type TokenPayload } from 'src/auth/auth-types';
+import { USER_ROLES } from 'src/user/user-types';
 
 @ApiTags(ROLE_MANAGEMENT_ROUTES.ROLE)
 @Controller(ROLE_MANAGEMENT_ROUTES.ROLE)
@@ -84,7 +85,7 @@ export class RoleManagementController {
   //get pending reqests
   @ApiSwaggerResponse(PendingRequestsResponse, {})
   @Get(ROLE_MANAGEMENT_ROUTES.PENDING_REQUESTS)
-  @UseGuards(RolesGuard())
+  @UseGuards(RolesGuard(USER_ROLES.ADMIN))
   async getPendingRequest(@Res() res: Response) {
     try {
       const result = await this.roleManagementService.getPendingRequest();
