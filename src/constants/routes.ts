@@ -10,7 +10,7 @@ export const AUTH_ROUTES = {
 export const ROLE_MANAGEMENT_ROUTES = {
   ROLE: 'role-requests',
   MY_REQUESTS: ':id/my-requests',
-  UPGRADE_ROLE: ':id',
+  UPGRADE_ROLE: '',
   PENDING_REQUESTS: 'pending-requests',
   PROCESS_REQUEST: ':id',
 };

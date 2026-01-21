@@ -29,6 +29,8 @@ import {
 import { ROLE_MANAGEMENT_ROUTES } from 'src/constants/routes';
 import { RolesGuard } from 'src/modules/guards/role.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
+import { type TokenPayload } from 'src/auth/auth-types';
 
 @ApiTags(ROLE_MANAGEMENT_ROUTES.ROLE)
 @Controller(ROLE_MANAGEMENT_ROUTES.ROLE)
@@ -58,7 +60,7 @@ export class RoleManagementController {
   async requestUpdgrade(
     @Res() res: Response,
     @Body() updateRoleDto: UpdateRoleDto,
-    @Param('id') userId: string,
+    @CurrentUser() user: TokenPayload,
   ) {
     if (!updateRoleDto.role) {
       throw new BadRequestException(ERROR_MESSAGES.BAD_REQUEST);
@@ -67,7 +69,7 @@ export class RoleManagementController {
     try {
       await this.roleManagementService.requestUpdgrade(
         updateRoleDto.role,
-        userId,
+        user.id,
       );
 
       return responseUtils.success(res, {

@@ -13,36 +13,34 @@ import { USER_ROLES } from 'src/user/user-types';
 import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { ID_SELECT_FIELDS } from 'src/user/user.constants';
+import { findExistingEntity } from 'src/utils/db.utils';
 
 @Injectable()
 export class RoleManagementService {
   constructor(
     @InjectRepository(RoleApproval)
     private readonly roleApprovalRepository: Repository<RoleApproval>,
-    @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   //request upgrade
   async requestUpdgrade(requestedRole: USER_ROLES, id: string): Promise<void> {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .select(ID_SELECT_FIELDS)
-      .where('user.id = :id', {
-        id,
-      })
-      .getOne();
+    const user = await findExistingEntity(this.userRepository, {
+      id,
+    });
 
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
 
-    const requestExists = await this.roleApprovalRepository
-      .createQueryBuilder('role')
-      .where('role.userId = :id AND role.requestedRole = :requestedRole', {
-        id,
+    const requestExists = await findExistingEntity(
+      this.roleApprovalRepository,
+      {
+        userId: id,
         requestedRole,
-      })
-      .getOne();
+      },
+    );
 
     if (requestExists) {
       throw new ConflictException(ERROR_MESSAGES.CONFLICT);
