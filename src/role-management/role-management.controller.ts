@@ -3,17 +3,16 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { RoleManagementService } from './role-management.service';
-import type { Response } from 'express';
 import { UpdateRoleDto } from './dto/role-management.dto';
 import { processRoleApprovalRequestDto } from './dto/role-management.dto';
-import responseUtils from 'src/utils/response.utils';
+import { messageResponse } from 'src/utils/response.utils';
 import { StatusCodes } from 'http-status-codes';
 import { AuthGuard } from 'src/modules/guards/auth.guard';
 import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
@@ -29,6 +28,7 @@ import {
 import { ROLE_MANAGEMENT_ROUTES } from 'src/constants/routes';
 import { RolesGuard } from 'src/modules/guards/role.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { TransformWith } from 'src/modules/decorators/response-transformer.decorator';
 
 @ApiTags(ROLE_MANAGEMENT_ROUTES.ROLE)
 @Controller(ROLE_MANAGEMENT_ROUTES.ROLE)
@@ -37,22 +37,20 @@ export class RoleManagementController {
   constructor(private readonly roleManagementService: RoleManagementService) {}
 
   //get my requests
-  @ApiSwaggerResponse(MyRequestsResponse)
   @Get(ROLE_MANAGEMENT_ROUTES.MY_REQUESTS)
-  async getMyRequests(@Res() res: Response, @Param('id') userId: string) {
-    const result = await this.roleManagementService.getMyRequests(userId);
-
-    return responseUtils.success(res, {
-      data: result,
-      transformWith: MyRequestsResponse,
-    });
+  @ApiSwaggerResponse(MyRequestsResponse)
+  @TransformWith(MyRequestsResponse)
+  @HttpCode(StatusCodes.OK)
+  async getMyRequests(@Param('id') userId: string) {
+    return await this.roleManagementService.getMyRequests(userId);
   }
 
   //request upgrade
-  @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.CREATED })
   @Post(ROLE_MANAGEMENT_ROUTES.UPGRADE_ROLE)
+  @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.CREATED })
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.CREATED)
   async requestUpdgrade(
-    @Res() res: Response,
     @Body() updateRoleDto: UpdateRoleDto,
     @Param('id') userId: string,
   ) {
@@ -65,29 +63,24 @@ export class RoleManagementController {
       userId,
     );
 
-    return responseUtils.success(res, {
-      data: { message: SUCCESS_MESSAGES.CREATED },
-      status: StatusCodes.CREATED,
-      transformWith: MessageResponse,
-    });
+    return messageResponse(SUCCESS_MESSAGES.CREATED);
   }
   //get pending reqests
-  @ApiSwaggerResponse(PendingRequestsResponse, {})
   @Get(ROLE_MANAGEMENT_ROUTES.PENDING_REQUESTS)
+  @ApiSwaggerResponse(PendingRequestsResponse, {})
+  @TransformWith(PendingRequestsResponse)
+  @HttpCode(StatusCodes.OK)
   @UseGuards(RolesGuard())
-  async getPendingRequest(@Res() res: Response) {
-    const result = await this.roleManagementService.getPendingRequest();
-    return responseUtils.success(res, {
-      data: result,
-      transformWith: PendingRequestsResponse,
-    });
+  async getPendingRequest() {
+    return await this.roleManagementService.getPendingRequest();
   }
   //approve / reject request
-  @ApiSwaggerResponse(MessageResponse)
   @Patch(ROLE_MANAGEMENT_ROUTES.PROCESS_REQUEST)
+  @ApiSwaggerResponse(MessageResponse)
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.OK)
   @UseGuards(RolesGuard())
   async processRequest(
-    @Res() res: Response,
     @Body() { isApproved }: processRoleApprovalRequestDto,
     @Param('id') roleApprovalRequestId: string,
   ) {
@@ -96,9 +89,6 @@ export class RoleManagementController {
       roleApprovalRequestId,
     );
 
-    return responseUtils.success(res, {
-      data: { message: SUCCESS_MESSAGES.SUCCESS },
-      transformWith: MessageResponse,
-    });
+    return messageResponse(SUCCESS_MESSAGES.SUCCESS);
   }
 }
