@@ -35,16 +35,12 @@ export class UploadsController {
     @Res() res: Response,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    try {
-      const result = await this.uploadsService.uploadMultipleAttachments(files);
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: UploadMultipleResponse,
-        status: StatusCodes.CREATED,
-      });
-    } catch (error) {
-      responseUtils.error({ res, error });
-    }
+    const result = await this.uploadsService.uploadMultipleAttachments(files);
+    return responseUtils.success(res, {
+      data: result,
+      transformWith: UploadMultipleResponse,
+      status: StatusCodes.CREATED,
+    });
   }
 
   @Delete(UPLOAD_ROUTES.DELETE_UPLOAD)
@@ -54,17 +50,13 @@ export class UploadsController {
     @Param('folder') folder: string,
     @Param('id') id: string,
   ) {
-    try {
-      const publicId = `${folder}/${id}`;
-      await this.uploadsService.deleteSingleAttachment(publicId);
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.DELETED,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      responseUtils.error({ res, error });
-    }
+    const publicId = `${folder}/${id}`;
+    await this.uploadsService.deleteSingleAttachment(publicId);
+    return responseUtils.success(res, {
+      data: {
+        message: SUCCESS_MESSAGES.DELETED,
+      },
+      transformWith: MessageResponse,
+    });
   }
 }
