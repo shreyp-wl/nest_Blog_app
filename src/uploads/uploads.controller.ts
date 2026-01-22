@@ -1,9 +1,9 @@
 import {
   Controller,
   Delete,
+  HttpCode,
   Param,
   Post,
-  Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -13,13 +13,13 @@ import { ApiTags } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FILE_NAME, MAX_UPLOAD_COUNT } from 'src/constants/upload.constants';
 import { uploadOptions } from 'src/config/upload.config';
-import responseUtils from 'src/utils/response.utils';
-import { type Response } from 'express';
+import { messageResponse } from 'src/utils/response.utils';
 import { UploadMultipleResponse } from './uploads.response';
 import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
 import { StatusCodes } from 'http-status-codes';
 import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
+import { TransformWith } from 'src/modules/decorators/response-transformer.decorator';
 
 @ApiTags(UPLOAD_ROUTES.UPLOAD)
 @Controller(UPLOAD_ROUTES.UPLOAD)
@@ -31,40 +31,24 @@ export class UploadsController {
   @ApiSwaggerResponse(UploadMultipleResponse, {
     status: StatusCodes.CREATED,
   })
+  @TransformWith(UploadMultipleResponse)
+  @HttpCode(StatusCodes.CREATED)
   async uploadMultipleAttachment(
-    @Res() res: Response,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    try {
-      const result = await this.uploadsService.uploadMultipleAttachments(files);
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: UploadMultipleResponse,
-        status: StatusCodes.CREATED,
-      });
-    } catch (error) {
-      responseUtils.error({ res, error });
-    }
+    return await this.uploadsService.uploadMultipleAttachments(files);
   }
 
   @Delete(UPLOAD_ROUTES.DELETE_UPLOAD)
   @ApiSwaggerResponse(MessageResponse)
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.OK)
   async deleteSingleAttachment(
-    @Res() res: Response,
     @Param('folder') folder: string,
     @Param('id') id: string,
   ) {
-    try {
-      const publicId = `${folder}/${id}`;
-      await this.uploadsService.deleteSingleAttachment(publicId);
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.DELETED,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      responseUtils.error({ res, error });
-    }
+    const publicId = `${folder}/${id}`;
+    await this.uploadsService.deleteSingleAttachment(publicId);
+    return messageResponse(SUCCESS_MESSAGES.DELETED);
   }
 }

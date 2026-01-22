@@ -7,13 +7,12 @@ import {
   Patch,
   Param,
   Delete,
-  Res,
   Query,
+  HttpCode,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
-import responseUtils from 'src/utils/response.utils';
-import { type Response } from 'express';
+import { messageResponse } from 'src/utils/response.utils';
 import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
 import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
@@ -21,7 +20,7 @@ import { StatusCodes } from 'http-status-codes';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CategoryResponse, GetAllCategoryResponse } from './category.response';
 import { ApiTags } from '@nestjs/swagger';
-
+import { TransformWith } from 'src/modules/decorators/response-transformer.decorator';
 @ApiTags(CATEGORY_ROUTES.CATEGORY)
 @Controller(CATEGORY_ROUTES.CATEGORY)
 export class CategoryController {
@@ -31,92 +30,51 @@ export class CategoryController {
   @ApiSwaggerResponse(MessageResponse, {
     status: StatusCodes.CREATED,
   })
-  async create(
-    @Res() res: Response,
-    @Body() { name, description }: CreateCategoryDto,
-  ) {
-    try {
-      await this.categoryService.create({ name, description });
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.CREATED,
-        },
-        transformWith: MessageResponse,
-        status: StatusCodes.CREATED,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.CREATED)
+  async create(@Body() { name, description }: CreateCategoryDto) {
+    await this.categoryService.create({ name, description });
+    return messageResponse(SUCCESS_MESSAGES.CREATED);
   }
 
   @Get(CATEGORY_ROUTES.GET_ALL)
   @ApiSwaggerResponse(GetAllCategoryResponse)
-  async findAll(
-    @Res() res: Response,
-    @Query() { page, limit, isPagination }: PaginationDto,
-  ) {
-    try {
-      const result = await this.categoryService.findAll({
-        page,
-        limit,
-        isPagination,
-      });
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: GetAllCategoryResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+  @TransformWith(GetAllCategoryResponse)
+  @HttpCode(StatusCodes.OK)
+  async findAll(@Query() { page, limit, isPagination }: PaginationDto) {
+    return await this.categoryService.findAll({
+      page,
+      limit,
+      isPagination,
+    });
   }
 
   @Get(CATEGORY_ROUTES.GET_ONE)
   @ApiSwaggerResponse(CategoryResponse)
-  async findOne(@Res() res: Response, @Param('id') id: string) {
-    try {
-      const result = await this.categoryService.findOne(id);
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: CategoryResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+  @TransformWith(CategoryResponse)
+  @HttpCode(StatusCodes.OK)
+  async findOne(@Param('id') id: string) {
+    return await this.categoryService.findOne(id);
   }
 
   @Patch(CATEGORY_ROUTES.UPDATE)
   @ApiSwaggerResponse(MessageResponse)
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.OK)
   update(
-    @Res() res: Response,
     @Param('id') id: string,
     @Body() { name, description, isActive }: UpdateCategoryDto,
   ) {
-    try {
-      this.categoryService.update(id, { name, description, isActive });
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.SUCCESS,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    this.categoryService.update(id, { name, description, isActive });
+    return messageResponse(SUCCESS_MESSAGES.SUCCESS);
   }
 
   @Delete(CATEGORY_ROUTES.DELETE)
   @ApiSwaggerResponse(MessageResponse)
-  async remove(@Res() res: Response, @Param('id') id: string) {
-    try {
-      await this.categoryService.remove(id);
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.SUCCESS,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.OK)
+  async remove(@Param('id') id: string) {
+    await this.categoryService.remove(id);
+    return messageResponse(SUCCESS_MESSAGES.SUCCESS);
   }
 }
