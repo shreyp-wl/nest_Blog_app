@@ -18,6 +18,10 @@ interface ErrorResponseFormat {
   message: string;
   errors?: Array<{ row: number; errorMessages: string[] }>;
 }
+
+export function messageResponse(message: string) {
+  return { message };
+}
 class ResponseUtils {
   public success<T>(
     resp: Response,
