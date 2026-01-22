@@ -51,37 +51,29 @@ export class AuthController {
   })
   @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.CREATED })
   async register(@Res() res: Response, @Body() user: CreateUserDto) {
-    try {
-      await this.authService.register(user);
-      return responseUtils.success(res, {
-        data: { message: SUCCESS_MESSAGES.CREATED },
-        transformWith: MessageResponse,
-        status: StatusCodes.CREATED,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    await this.authService.register(user);
+    return responseUtils.success(res, {
+      data: { message: SUCCESS_MESSAGES.CREATED },
+      transformWith: MessageResponse,
+      status: StatusCodes.CREATED,
+    });
   }
 
   @ApiSwaggerResponse(MessageResponse)
   @Post(AUTH_ROUTES.LOGIN)
   async login(@Res() res: Response, @Body() { email, password }: LoginUserDto) {
-    try {
-      const { accessToken, refreshToken } = await this.authService.login({
-        email,
-        password,
-      });
+    const { accessToken, refreshToken } = await this.authService.login({
+      email,
+      password,
+    });
 
-      res.cookie('refreshToken', refreshToken, refreshTokenConfig);
-      res.cookie('accessToken', accessToken, accessTokenConfig);
+    res.cookie('refreshToken', refreshToken, refreshTokenConfig);
+    res.cookie('accessToken', accessToken, accessTokenConfig);
 
-      return responseUtils.success(res, {
-        data: { message: SUCCESS_MESSAGES.LOGGED_IN },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    return responseUtils.success(res, {
+      data: { message: SUCCESS_MESSAGES.LOGGED_IN },
+      transformWith: MessageResponse,
+    });
   }
 
   @ApiSwaggerResponse(MessageResponse)
@@ -93,20 +85,16 @@ export class AuthController {
       throw new UnauthorizedException(ERROR_MESSAGES.INVALID_REFRESHTOKEN);
     }
 
-    try {
-      const { accessToken, refreshToken } =
-        await this.authService.refresh(oldRefrshToken);
+    const { accessToken, refreshToken } =
+      await this.authService.refresh(oldRefrshToken);
 
-      res.cookie('refreshToken', refreshToken, refreshTokenConfig);
-      res.cookie('accessToken', accessToken, accessTokenConfig);
+    res.cookie('refreshToken', refreshToken, refreshTokenConfig);
+    res.cookie('accessToken', accessToken, accessTokenConfig);
 
-      return responseUtils.success(res, {
-        data: { message: SUCCESS_MESSAGES.SUCCESS },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    return responseUtils.success(res, {
+      data: { message: SUCCESS_MESSAGES.SUCCESS },
+      transformWith: MessageResponse,
+    });
   }
 
   @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.NO_CONTENT })
