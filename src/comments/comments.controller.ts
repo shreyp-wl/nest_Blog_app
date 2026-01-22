@@ -5,16 +5,15 @@ import {
   Patch,
   Param,
   Delete,
-  Res,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { UpdateCommentDto } from './dto/comment.dto';
 import { COMMENT_ROUTES } from 'src/constants/routes';
 import { ApiTags } from '@nestjs/swagger';
-import { type Response } from 'express';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import responseUtils from 'src/utils/response.utils';
+import { messageResponse } from 'src/utils/response.utils';
 import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
 import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
 import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
@@ -22,6 +21,8 @@ import { CommentResponse, GetAllCommentResponse } from './comment.response';
 import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
 import { type TokenPayload } from 'src/auth/auth-types';
 import { AuthGuard } from 'src/modules/guards/auth.guard';
+import { TransformWith } from 'src/modules/decorators/response-transformer.decorator';
+import { StatusCodes } from 'http-status-codes';
 
 @ApiTags(COMMENT_ROUTES.COMMENT)
 @Controller(COMMENT_ROUTES.COMMENT)
@@ -30,58 +31,44 @@ export class CommentsController {
 
   @Get(COMMENT_ROUTES.GET_ALL)
   @ApiSwaggerResponse(GetAllCommentResponse)
-  async findAll(
-    @Res() res: Response,
-    @Param() { page, limit, isPagination }: PaginationDto,
-  ) {
-    const result = await this.commentsService.findAll({
+  @TransformWith(GetAllCommentResponse)
+  @HttpCode(StatusCodes.OK)
+  async findAll(@Param() { page, limit, isPagination }: PaginationDto) {
+    return await this.commentsService.findAll({
       page,
       limit,
       isPagination,
-    });
-    return responseUtils.success(res, {
-      data: result,
-      transformWith: GetAllCommentResponse,
     });
   }
 
   @Get(COMMENT_ROUTES.GET_ONE)
   @ApiSwaggerResponse(CommentResponse)
-  async findOne(@Res() res: Response, @Param('id') id: string) {
-    const result = await this.commentsService.findOne(id);
-    return responseUtils.success(res, {
-      data: result,
-      transformWith: CommentResponse,
-    });
+  @TransformWith(CommentResponse)
+  @HttpCode(StatusCodes.OK)
+  async findOne(@Param('id') id: string) {
+    return await this.commentsService.findOne(id);
   }
 
   @Patch(COMMENT_ROUTES.UPDATE)
-  @UseGuards(AuthGuard)
   @ApiSwaggerResponse(MessageResponse)
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.OK)
+  @UseGuards(AuthGuard)
   async update(
-    @Res() res: Response,
     @CurrentUser() user: TokenPayload,
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
   ) {
     await this.commentsService.update(user.id, id, updateCommentDto);
-    return responseUtils.success(res, {
-      data: {
-        message: SUCCESS_MESSAGES.UPDATED,
-      },
-      transformWith: MessageResponse,
-    });
+    return messageResponse(SUCCESS_MESSAGES.UPDATED);
   }
 
   @Delete(COMMENT_ROUTES.DELETE)
   @ApiSwaggerResponse(MessageResponse)
-  async remove(@Res() res: Response, @Param('id') id: string) {
+  @TransformWith(MessageResponse)
+  @HttpCode(StatusCodes.OK)
+  async remove(@Param('id') id: string) {
     await this.commentsService.remove(id);
-    return responseUtils.success(res, {
-      data: {
-        message: SUCCESS_MESSAGES.DELETED,
-      },
-      transformWith: MessageResponse,
-    });
+    return messageResponse(SUCCESS_MESSAGES.SUCCESS);
   }
 }
