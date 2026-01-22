@@ -47,11 +47,12 @@ class ResponseUtils {
         : HttpStatus.BAD_REQUEST;
     const errorResponse: ErrorResponseFormat = {
       statusCode: statusCode ?? errorStatus,
-      message: error.message,
+      message: error.response.message,
     };
     if (additionalErrors && additionalErrors.length > 0) {
       errorResponse.errors = additionalErrors;
     }
+
     return res.status(errorStatus).send(errorResponse);
   }
 }
