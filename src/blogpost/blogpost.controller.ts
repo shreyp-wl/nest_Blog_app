@@ -62,28 +62,24 @@ export class BlogpostController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() { title, content, summary, categoryId }: CreateBlogPostDto,
   ) {
-    try {
-      await this.blogpostService.create(
-        {
-          title,
-          categoryId,
-          content,
-          summary,
-          authorId: user.id,
-        },
-        files,
-      );
+    await this.blogpostService.create(
+      {
+        title,
+        categoryId,
+        content,
+        summary,
+        authorId: user.id,
+      },
+      files,
+    );
 
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.CREATED,
-        },
-        status: StatusCodes.CREATED,
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    return responseUtils.success(res, {
+      data: {
+        message: SUCCESS_MESSAGES.CREATED,
+      },
+      status: StatusCodes.CREATED,
+      transformWith: MessageResponse,
+    });
   }
 
   @Get(BLOG_POST_ROUTES.GET_ALL)
@@ -94,22 +90,18 @@ export class BlogpostController {
     @Res() res: Response,
     @Query() { q, isPagination, page, limit }: SearchBlogPostDto,
   ) {
-    try {
-      const result = await this.blogpostService.findAll(
-        {
-          page,
-          limit,
-          isPagination,
-        },
-        q,
-      );
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: GetAllBlogPostResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    const result = await this.blogpostService.findAll(
+      {
+        page,
+        limit,
+        isPagination,
+      },
+      q,
+    );
+    return responseUtils.success(res, {
+      data: result,
+      transformWith: GetAllBlogPostResponse,
+    });
   }
 
   @Get(BLOG_POST_ROUTES.GET_ONE)
@@ -117,15 +109,11 @@ export class BlogpostController {
     status: StatusCodes.OK,
   })
   async findOne(@Res() res: Response, @Param('slug') slug: string) {
-    try {
-      const result = await this.blogpostService.findOne(slug);
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: BlogPostResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    const result = await this.blogpostService.findOne(slug);
+    return responseUtils.success(res, {
+      data: result,
+      transformWith: BlogPostResponse,
+    });
   }
 
   @ApiSwaggerResponse(MessageResponse)
@@ -137,55 +125,43 @@ export class BlogpostController {
     @Param('id') id: string,
     @Body() { title, content, summary, categoryId }: UpdateBlogPostDto,
   ) {
-    try {
-      await this.blogpostService.update(user.id, id, {
-        title,
-        categoryId,
-        content,
-        summary,
-      });
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.UPDATED,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    await this.blogpostService.update(user.id, id, {
+      title,
+      categoryId,
+      content,
+      summary,
+    });
+    return responseUtils.success(res, {
+      data: {
+        message: SUCCESS_MESSAGES.UPDATED,
+      },
+      transformWith: MessageResponse,
+    });
   }
 
   @ApiSwaggerResponse(MessageResponse)
   @Delete(BLOG_POST_ROUTES.DELETE)
   remove(@Res() res: Response, @Param('id') id: string) {
-    try {
-      this.blogpostService.remove(id);
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.DELETED,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    this.blogpostService.remove(id);
+    return responseUtils.success(res, {
+      data: {
+        message: SUCCESS_MESSAGES.DELETED,
+      },
+      transformWith: MessageResponse,
+    });
   }
 
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR), OwnershipGuard)
   @ApiSwaggerResponse(MessageResponse)
   @Patch(BLOG_POST_ROUTES.PUBLISH)
   publish(@Res() res: Response, @Param('id') id: string) {
-    try {
-      this.blogpostService.publish(id);
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.SUCCESS,
-        },
-        transformWith: MessageResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    this.blogpostService.publish(id);
+    return responseUtils.success(res, {
+      data: {
+        message: SUCCESS_MESSAGES.SUCCESS,
+      },
+      transformWith: MessageResponse,
+    });
   }
 
   @Post(BLOG_POST_ROUTES.CREATE_COMMENT)
@@ -199,18 +175,14 @@ export class BlogpostController {
     @Param('id') postId: string,
     @Body() { content }: CreateCommentDto,
   ) {
-    try {
-      await this.commentService.create({ content, authorId: user.id, postId });
-      return responseUtils.success(res, {
-        data: {
-          message: SUCCESS_MESSAGES.CREATED,
-        },
-        transformWith: MessageResponse,
-        status: StatusCodes.CREATED,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    await this.commentService.create({ content, authorId: user.id, postId });
+    return responseUtils.success(res, {
+      data: {
+        message: SUCCESS_MESSAGES.CREATED,
+      },
+      transformWith: MessageResponse,
+      status: StatusCodes.CREATED,
+    });
   }
 
   @Get(BLOG_POST_ROUTES.GET_COMMENTS_ON_POST)
@@ -220,18 +192,14 @@ export class BlogpostController {
     @Query() { page, limit, isPagination }: PaginationDto,
     @Param('id') id: string,
   ) {
-    try {
-      const result = await this.blogpostService.getCommentsOnPost(id, {
-        page,
-        limit,
-        isPagination,
-      });
-      return responseUtils.success(res, {
-        data: result,
-        transformWith: GetAllCommentesOnPostResponse,
-      });
-    } catch (error) {
-      return responseUtils.error({ res, error });
-    }
+    const result = await this.blogpostService.getCommentsOnPost(id, {
+      page,
+      limit,
+      isPagination,
+    });
+    return responseUtils.success(res, {
+      data: result,
+      transformWith: GetAllCommentesOnPostResponse,
+    });
   }
 }
