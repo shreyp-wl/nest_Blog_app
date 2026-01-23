@@ -15,7 +15,7 @@ import { generateSlug } from 'src/utils/blogpost.utils';
 import { paginationInput } from 'src/common/interfaces/pagination.interfaces';
 import { getPageinationMeta } from 'src/common/helper/pagination.helper';
 import { getOffset } from '../common/helper/pagination.helper';
-import { CATEGORY_SELECT } from './category.constants';
+import { CATEGORY_CONSTANTS } from './category.constants';
 
 @Injectable()
 export class CategoryService {
@@ -46,9 +46,12 @@ export class CategoryService {
 
   async findAll({ page, limit, isPagination }: paginationInput) {
     const qb = this.categoryRepository.createQueryBuilder('category');
-    qb.select(CATEGORY_SELECT).where('category.isActive = :isActive', {
-      isActive: true,
-    });
+    qb.select(CATEGORY_CONSTANTS.GET_ALL_CATEGORY_SELECT).where(
+      'category.isActive = :isActive',
+      {
+        isActive: true,
+      },
+    );
 
     if (isPagination) {
       const offSet = getOffset(page, limit);
@@ -61,7 +64,7 @@ export class CategoryService {
 
   async findOne(id: string) {
     const qb = this.categoryRepository.createQueryBuilder('category');
-    qb.select(CATEGORY_SELECT).where(
+    qb.select(CATEGORY_CONSTANTS.CATEGORY_SELECT).where(
       'category.id = :id AND category.isActive = :isActive',
       {
         id,

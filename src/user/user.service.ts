@@ -13,7 +13,7 @@ import {
   paginationInput,
   paginationMeta,
 } from 'src/common/interfaces/pagination.interfaces';
-import { USER_SELECT_FIELDS } from 'src/user/user.constants';
+import { USER_CONSTANTS } from 'src/user/user.constants';
 import { SORT_ORDER, SORTBY } from 'src/common/enums';
 import {
   getOffset,
@@ -36,7 +36,7 @@ export class UserService {
   }: paginationInput): Promise<paginationMeta> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
-      .select(USER_SELECT_FIELDS)
+      .select(USER_CONSTANTS.USER_SELECT_FIELDS)
       .orderBy(`user.${SORTBY.CREATED_AT}`, SORT_ORDER.DESC);
 
     if (isPagination) {
@@ -52,7 +52,7 @@ export class UserService {
   async findOne(id: string): Promise<UserEntity> {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .select(USER_SELECT_FIELDS)
+      .select(USER_CONSTANTS.USER_SELECT_FIELDS)
       .where('user.id = :id', {
         id,
       })

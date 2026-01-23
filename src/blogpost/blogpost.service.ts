@@ -14,12 +14,7 @@ import {
   paginationInput,
   paginationMeta,
 } from 'src/common/interfaces/pagination.interfaces';
-import {
-  GET_ALL_BLOG_POST_SELECT,
-  GET_COMMENTS_ON_POST_SELECT,
-  SEARCH_QUERY,
-  SOFT_DELETED_POSTS_CLEANUP_INTERVAL,
-} from './blogpost.constants';
+import { BLOG_POST_CONSTANTS } from './blogpost.constants';
 import { BLOG_POST_STATUS } from './blogpost-types';
 import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
 import { UploadsService } from 'src/uploads/uploads.service';
@@ -95,9 +90,9 @@ export class BlogpostService {
     const qb = this.blogPostRepository
       .createQueryBuilder('post')
       .leftJoin('post.attachments', 'attachment')
-      .select(GET_ALL_BLOG_POST_SELECT);
+      .select(BLOG_POST_CONSTANTS.GET_ALL_BLOG_POST_SELECT);
     if (q) {
-      qb.where(SEARCH_QUERY, {
+      qb.where(BLOG_POST_CONSTANTS.SEARCH_QUERY, {
         q: `%${q}%`,
       });
     }
@@ -119,7 +114,7 @@ export class BlogpostService {
     const result = await this.blogPostRepository
       .createQueryBuilder('post')
       .leftJoin('post.attachments', 'attachment')
-      .select(GET_ALL_BLOG_POST_SELECT)
+      .select(BLOG_POST_CONSTANTS.GET_ALL_BLOG_POST_SELECT)
       .where('post.slug = :slug', {
         slug,
       })
@@ -232,7 +227,7 @@ export class BlogpostService {
     const qb = this.commentRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'author')
-      .select(GET_COMMENTS_ON_POST_SELECT)
+      .select(BLOG_POST_CONSTANTS.GET_COMMENTS_ON_POST_SELECT)
       .where('comment.postId = :id', {
         id,
       });
@@ -289,7 +284,8 @@ export class BlogpostService {
   async cleanupSoftDeleteRecords() {
     const cutOffDate = new Date();
     cutOffDate.setDate(
-      cutOffDate.getDate() - SOFT_DELETED_POSTS_CLEANUP_INTERVAL,
+      cutOffDate.getDate() -
+        BLOG_POST_CONSTANTS.SOFT_DELETED_POSTS_CLEANUP_INTERVAL,
     );
 
     const expiredPosts = await this.blogPostRepository

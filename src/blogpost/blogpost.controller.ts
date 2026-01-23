@@ -40,7 +40,7 @@ import { CreateCommentDto } from 'src/comments/dto/comment.dto';
 import { CommentsService } from 'src/comments/comments.service';
 import { type TokenPayload } from 'src/auth/auth-types';
 import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
-import { FILE_NAME, MAX_UPLOAD_COUNT } from 'src/constants/upload.constants';
+import { UPLOAD_CONSTANTS } from 'src/constants/upload.constants';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { uploadOptions } from 'src/config/upload.config';
 
@@ -52,7 +52,13 @@ export class BlogpostController {
     private readonly commentService: CommentsService,
   ) {}
 
-  @UseInterceptors(FilesInterceptor(FILE_NAME, MAX_UPLOAD_COUNT, uploadOptions))
+  @UseInterceptors(
+    FilesInterceptor(
+      UPLOAD_CONSTANTS.FILE_NAME,
+      UPLOAD_CONSTANTS.MAX_UPLOAD_COUNT,
+      uploadOptions,
+    ),
+  )
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
   @Post(BLOG_POST_ROUTES.CREATE)
   @ApiSwaggerResponse(MessageResponse, {

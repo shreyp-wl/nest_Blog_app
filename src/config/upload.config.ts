@@ -2,10 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { getOsEnv } from './env.config';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { BadRequestException } from '@nestjs/common';
-import {
-  MAX_UPLOAD_COUNT,
-  UPLOAD_FILE_SIZE,
-} from 'src/constants/upload.constants';
+import { UPLOAD_CONSTANTS } from 'src/constants/upload.constants';
 
 const CloudinaryProvider = {
   provide: 'CLOUDINARY',
@@ -26,7 +23,10 @@ export const uploadOptions: MulterOptions = {
 
     cb(null, true);
   },
-  limits: { fieldSize: UPLOAD_FILE_SIZE, files: MAX_UPLOAD_COUNT },
+  limits: {
+    fieldSize: UPLOAD_CONSTANTS.UPLOAD_FILE_SIZE,
+    files: UPLOAD_CONSTANTS.MAX_UPLOAD_COUNT,
+  },
 };
 
 export default CloudinaryProvider;

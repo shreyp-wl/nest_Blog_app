@@ -14,10 +14,7 @@ import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { BLOG_POST_STATUS } from 'src/blogpost/blogpost-types';
 import { COMMENT_STATUS } from './comments-types';
-import {
-  GET_ALL_COMMENTS_SELECT,
-  GET_ONE_COMMENT_SELECT,
-} from './comments.constants';
+import { COMMENT_CONSTANTS } from './comments.constants';
 import {
   getOffset,
   getPageinationMeta,
@@ -51,7 +48,7 @@ export class CommentsService {
   async findAll({ page, limit, isPagination }: paginationInput) {
     const qb = this.commentRepository
       .createQueryBuilder('comment')
-      .select(GET_ALL_COMMENTS_SELECT);
+      .select(COMMENT_CONSTANTS.GET_ALL_COMMENTS_SELECT);
     if (isPagination) {
       const skip = getOffset(page, limit);
       qb.skip(skip).limit(limit);
@@ -71,7 +68,7 @@ export class CommentsService {
     }
     const comment = await this.commentRepository
       .createQueryBuilder('comment')
-      .select(GET_ONE_COMMENT_SELECT)
+      .select(COMMENT_CONSTANTS.GET_ONE_COMMENT_SELECT)
       .where('comment.id =  :id', { id })
       .getOne();
     return comment;
