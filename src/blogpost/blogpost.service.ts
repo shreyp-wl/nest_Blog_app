@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlogpostEntity } from 'src/modules/database/entities/blogpost.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { generateSlug } from 'src/utils/blogpost.utils';
 import { SORT_ORDER, SORTBY } from 'src/common/enums';
@@ -38,6 +38,8 @@ import { USER_ROLES } from 'src/user/user-types';
 @Injectable()
 export class BlogpostService {
   constructor(
+    private readonly attachmentService: UploadsService,
+    private readonly dataSource: DataSource,
     @InjectRepository(BlogpostEntity)
     private readonly blogPostRepository: Repository<BlogpostEntity>,
     @InjectRepository(AttachmentEntity)
@@ -46,41 +48,48 @@ export class BlogpostService {
     private readonly categoryRepository: Repository<CategoryEntity>,
     @InjectRepository(CommentEntity)
     private readonly commentRepository: Repository<CommentEntity>,
-    private readonly attachmentService: UploadsService,
   ) {}
 
   async create(
     createBlogPostInput: CreateBlogPostInput,
     files: Express.Multer.File[],
   ): Promise<void> {
-    const existing = await findExistingEntity(this.blogPostRepository, {
-      title: createBlogPostInput.title,
-    });
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.CONFLICT);
-    }
-
-    const blogPost = this.blogPostRepository.create(createBlogPostInput);
-
-    if (createBlogPostInput.categoryId) {
-      const existingCategory = await findExistingEntity(
-        this.categoryRepository,
-        {
-          id: createBlogPostInput.categoryId,
-        },
+    await this.dataSource.transaction(async (manager) => {
+      const transactionalBlogPostRepo = manager.withRepository(
+        this.blogPostRepository,
       );
-
-      if (!existingCategory) {
-        throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+      const transactionalCategoryRepo = manager.withRepository(
+        this.categoryRepository,
+      );
+      const existing = await findExistingEntity(transactionalBlogPostRepo, {
+        title: createBlogPostInput.title,
+      });
+      if (existing) {
+        throw new ConflictException(ERROR_MESSAGES.CONFLICT);
       }
-      blogPost.categoryId = createBlogPostInput.categoryId;
-    }
 
-    blogPost.slug = generateSlug(blogPost.title);
+      const blogPost = transactionalBlogPostRepo.create(createBlogPostInput);
 
-    const savedPost = await this.blogPostRepository.save(blogPost);
+      if (createBlogPostInput.categoryId) {
+        const existingCategory = await findExistingEntity(
+          transactionalCategoryRepo,
+          {
+            id: createBlogPostInput.categoryId,
+          },
+        );
 
-    await this.saveAttachment(savedPost.id, files);
+        if (!existingCategory) {
+          throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+        }
+        blogPost.categoryId = createBlogPostInput.categoryId;
+      }
+
+      blogPost.slug = generateSlug(blogPost.title);
+
+      const savedPost = await transactionalBlogPostRepo.save(blogPost);
+
+      await this.saveAttachment(savedPost.id, files, manager);
+    });
   }
 
   async findAll(
@@ -252,17 +261,24 @@ export class BlogpostService {
     return result;
   }
 
-  async saveAttachment(postId: string, files: Express.Multer.File[]) {
+  async saveAttachment(
+    postId: string,
+    files: Express.Multer.File[],
+    manager?: EntityManager,
+  ) {
+    const attachmentRepo = manager
+      ? manager.withRepository(this.attachmentRepository)
+      : this.attachmentRepository;
     let uploads: UploadResult[] = [];
     try {
-      if (files.length) {
+      if (files && files.length) {
         uploads = (
           await this.attachmentService.uploadMultipleAttachments(files)
         ).data;
       }
 
       if (uploads.length) {
-        await this.attachmentRepository.save(
+        await attachmentRepo.save(
           uploads.map((u) => ({
             postId,
             publicId: u.public_id,
