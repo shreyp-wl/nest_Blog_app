@@ -4,10 +4,7 @@ import {
   UploadApiErrorResponse,
   UploadApiResponse,
 } from 'cloudinary';
-import {
-  RESOURCE_TYPE,
-  UPLOAD_DIRECTORY,
-} from 'src/constants/upload.constants';
+import { UPLOAD_CONSTANTS } from 'src/constants/upload.constants';
 import * as streamifier from 'streamifier';
 import { UploadResult } from './upload.interface';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
@@ -26,8 +23,8 @@ export class UploadsService {
         (resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
             {
-              folder: UPLOAD_DIRECTORY,
-              resource_type: RESOURCE_TYPE as any,
+              folder: UPLOAD_CONSTANTS.UPLOAD_DIRECTORY,
+              resource_type: UPLOAD_CONSTANTS.RESOURCE_TYPE as any,
             },
             (error, result) => {
               if (error) return reject(error);
@@ -53,7 +50,7 @@ export class UploadsService {
 
   async deleteSingleAttachment(publicId: string) {
     return await cloudinary.uploader.destroy(publicId, {
-      resource_type: RESOURCE_TYPE,
+      resource_type: UPLOAD_CONSTANTS.RESOURCE_TYPE,
     });
   }
 
@@ -64,7 +61,7 @@ export class UploadsService {
 
     const deletePromises = publicIds.map((id) =>
       cloudinary.uploader.destroy(id, {
-        resource_type: RESOURCE_TYPE,
+        resource_type: UPLOAD_CONSTANTS.RESOURCE_TYPE,
       }),
     );
 

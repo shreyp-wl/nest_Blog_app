@@ -1,3 +1,5 @@
+import { paginationInput } from 'src/common/interfaces/pagination.interfaces';
+
 export interface CreateBlogPostInput {
   title: string;
   content: string;
@@ -11,4 +13,8 @@ export interface UpdateBlogPostInput {
   content?: string;
   summary?: string;
   categoryId?: string;
+}
+
+export interface GetCommentsOnPostInput extends paginationInput {
+  isPending?: boolean;
 }

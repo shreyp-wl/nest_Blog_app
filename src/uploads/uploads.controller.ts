@@ -11,7 +11,7 @@ import { UploadsService } from './uploads.service';
 import { UPLOAD_ROUTES } from 'src/constants/routes';
 import { ApiTags } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { FILE_NAME, MAX_UPLOAD_COUNT } from 'src/constants/upload.constants';
+import { UPLOAD_CONSTANTS } from 'src/constants/upload.constants';
 import { uploadOptions } from 'src/config/upload.config';
 import responseUtils from 'src/utils/response.utils';
 import { type Response } from 'express';
@@ -26,7 +26,13 @@ import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
-  @UseInterceptors(FilesInterceptor(FILE_NAME, MAX_UPLOAD_COUNT, uploadOptions))
+  @UseInterceptors(
+    FilesInterceptor(
+      UPLOAD_CONSTANTS.FILE_NAME,
+      UPLOAD_CONSTANTS.MAX_UPLOAD_COUNT,
+      uploadOptions,
+    ),
+  )
   @Post(UPLOAD_ROUTES.CREATE_UPLOAD)
   @ApiSwaggerResponse(UploadMultipleResponse, {
     status: StatusCodes.CREATED,

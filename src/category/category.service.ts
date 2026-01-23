@@ -3,8 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
-import { CreateCategoryInput } from './interfaces/category.interface';
+import {
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from './interfaces/category.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryEntity } from 'src/modules/database/entities/category.entity';
 import { Not, Repository } from 'typeorm';
@@ -13,16 +15,13 @@ import { generateSlug } from 'src/utils/blogpost.utils';
 import { paginationInput } from 'src/common/interfaces/pagination.interfaces';
 import { getPageinationMeta } from 'src/common/helper/pagination.helper';
 import { getOffset } from '../common/helper/pagination.helper';
-import { CATEGORY_SELECT } from './category.constants';
-import { BlogpostEntity } from 'src/modules/database/entities/blogpost.entity';
+import { CATEGORY_CONSTANTS } from './category.constants';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
-    @InjectRepository(BlogpostEntity)
-    private readonly blogPostRepository: Repository<BlogpostEntity>,
   ) {}
 
   async create({ name, description }: CreateCategoryInput): Promise<void> {
@@ -47,7 +46,12 @@ export class CategoryService {
 
   async findAll({ page, limit, isPagination }: paginationInput) {
     const qb = this.categoryRepository.createQueryBuilder('category');
-    qb.select(CATEGORY_SELECT);
+    qb.select(CATEGORY_CONSTANTS.GET_ALL_CATEGORY_SELECT).where(
+      'category.isActive = :isActive',
+      {
+        isActive: true,
+      },
+    );
 
     if (isPagination) {
       const offSet = getOffset(page, limit);
@@ -60,7 +64,7 @@ export class CategoryService {
 
   async findOne(id: string) {
     const qb = this.categoryRepository.createQueryBuilder('category');
-    qb.select(CATEGORY_SELECT).where(
+    qb.select(CATEGORY_CONSTANTS.CATEGORY_SELECT).where(
       'category.id = :id AND category.isActive = :isActive',
       {
         id,
@@ -77,7 +81,7 @@ export class CategoryService {
     return result;
   }
 
-  async update(id: string, updateCategoryInput: UpdateCategoryDto) {
+  async update(id: string, updateCategoryInput: UpdateCategoryInput) {
     const category = await this.categoryRepository.findOne({
       where: { id },
     });
@@ -125,12 +129,6 @@ export class CategoryService {
     if (!category) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
-    await this.blogPostRepository
-      .createQueryBuilder()
-      .update()
-      .set({ categoryId: () => 'NULL' })
-      .where({ categoryId: id })
-      .execute();
 
     await this.categoryRepository.softRemove(category);
   }

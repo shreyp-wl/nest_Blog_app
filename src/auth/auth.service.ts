@@ -15,10 +15,7 @@ import {
   TokenPayload,
 } from './auth-types';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
-import {
-  LOGIN_SELECT_FIELDS,
-  REGISTER_SELECT_FIELDS,
-} from 'src/user/user.constants';
+import { USER_CONSTANTS } from 'src/user/user.constants';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +29,7 @@ export class AuthService {
     const { email, password } = loginUserParams;
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .select(LOGIN_SELECT_FIELDS)
+      .select(USER_CONSTANTS.LOGIN_SELECT_FIELDS)
       .addSelect('user.password')
       .where('user.email = :email', {
         email,
@@ -78,7 +75,7 @@ export class AuthService {
   }: createUserParams): Promise<void> {
     const existingUser = await this.userRepository
       .createQueryBuilder('user')
-      .select(REGISTER_SELECT_FIELDS)
+      .select(USER_CONSTANTS.REGISTER_SELECT_FIELDS)
       .where('user.email = :email', {
         email,
       })

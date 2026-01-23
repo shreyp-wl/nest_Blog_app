@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlogpostEntity } from 'src/modules/database/entities/blogpost.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { generateSlug } from 'src/utils/blogpost.utils';
 import { SORT_ORDER, SORTBY } from 'src/common/enums';
@@ -14,12 +14,7 @@ import {
   paginationInput,
   paginationMeta,
 } from 'src/common/interfaces/pagination.interfaces';
-import {
-  GET_ALL_BLOG_POST_SELECT,
-  GET_COMMENTS_ON_POST_SELECT,
-  SEARCH_QUERY,
-  SOFT_DELETED_POSTS_CLEANUP_INTERVAL,
-} from './blogpost.constants';
+import { BLOG_POST_CONSTANTS } from './blogpost.constants';
 import { BLOG_POST_STATUS } from './blogpost-types';
 import { AttachmentEntity } from 'src/modules/database/entities/attachment.entity';
 import { UploadsService } from 'src/uploads/uploads.service';
@@ -30,6 +25,7 @@ import {
 } from 'src/common/helper/pagination.helper';
 import {
   CreateBlogPostInput,
+  GetCommentsOnPostInput,
   UpdateBlogPostInput,
 } from './interfaces/blogpost.interface';
 import { COMMENT_STATUS } from 'src/comments/comments-types';
@@ -42,6 +38,8 @@ import { USER_ROLES } from 'src/user/user-types';
 @Injectable()
 export class BlogpostService {
   constructor(
+    private readonly attachmentService: UploadsService,
+    private readonly dataSource: DataSource,
     @InjectRepository(BlogpostEntity)
     private readonly blogPostRepository: Repository<BlogpostEntity>,
     @InjectRepository(AttachmentEntity)
@@ -50,41 +48,48 @@ export class BlogpostService {
     private readonly categoryRepository: Repository<CategoryEntity>,
     @InjectRepository(CommentEntity)
     private readonly commentRepository: Repository<CommentEntity>,
-    private readonly attachmentService: UploadsService,
   ) {}
 
   async create(
     createBlogPostInput: CreateBlogPostInput,
     files: Express.Multer.File[],
   ): Promise<void> {
-    const existing = await findExistingEntity(this.blogPostRepository, {
-      title: createBlogPostInput.title,
-    });
-    if (existing) {
-      throw new ConflictException(ERROR_MESSAGES.CONFLICT);
-    }
-
-    const blogPost = this.blogPostRepository.create(createBlogPostInput);
-
-    if (createBlogPostInput.categoryId) {
-      const existingCategory = await findExistingEntity(
-        this.categoryRepository,
-        {
-          id: createBlogPostInput.categoryId,
-        },
+    await this.dataSource.transaction(async (manager) => {
+      const transactionalBlogPostRepo = manager.withRepository(
+        this.blogPostRepository,
       );
-
-      if (!existingCategory) {
-        throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+      const transactionalCategoryRepo = manager.withRepository(
+        this.categoryRepository,
+      );
+      const existing = await findExistingEntity(transactionalBlogPostRepo, {
+        title: createBlogPostInput.title,
+      });
+      if (existing) {
+        throw new ConflictException(ERROR_MESSAGES.CONFLICT);
       }
-      blogPost.categoryId = createBlogPostInput.categoryId;
-    }
 
-    blogPost.slug = generateSlug(blogPost.title);
+      const blogPost = transactionalBlogPostRepo.create(createBlogPostInput);
 
-    const savedPost = await this.blogPostRepository.save(blogPost);
+      if (createBlogPostInput.categoryId) {
+        const existingCategory = await findExistingEntity(
+          transactionalCategoryRepo,
+          {
+            id: createBlogPostInput.categoryId,
+          },
+        );
 
-    await this.saveAttachment(savedPost.id, files);
+        if (!existingCategory) {
+          throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+        }
+        blogPost.categoryId = createBlogPostInput.categoryId;
+      }
+
+      blogPost.slug = generateSlug(blogPost.title);
+
+      const savedPost = await transactionalBlogPostRepo.save(blogPost);
+
+      await this.saveAttachment(savedPost.id, files, manager);
+    });
   }
 
   async findAll(
@@ -94,9 +99,9 @@ export class BlogpostService {
     const qb = this.blogPostRepository
       .createQueryBuilder('post')
       .leftJoin('post.attachments', 'attachment')
-      .select(GET_ALL_BLOG_POST_SELECT);
+      .select(BLOG_POST_CONSTANTS.GET_ALL_BLOG_POST_SELECT);
     if (q) {
-      qb.where(SEARCH_QUERY, {
+      qb.where(BLOG_POST_CONSTANTS.SEARCH_QUERY, {
         q: `%${q}%`,
       });
     }
@@ -118,7 +123,7 @@ export class BlogpostService {
     const result = await this.blogPostRepository
       .createQueryBuilder('post')
       .leftJoin('post.attachments', 'attachment')
-      .select(GET_ALL_BLOG_POST_SELECT)
+      .select(BLOG_POST_CONSTANTS.GET_ALL_BLOG_POST_SELECT)
       .where('post.slug = :slug', {
         slug,
       })
@@ -220,7 +225,7 @@ export class BlogpostService {
 
   async getCommentsOnPost(
     id: string,
-    { page, limit, isPagination }: paginationInput,
+    { isPagination, page, limit, isPending }: GetCommentsOnPostInput,
   ) {
     const existingPost = await findExistingEntity(this.blogPostRepository, {
       id,
@@ -231,11 +236,20 @@ export class BlogpostService {
     const qb = this.commentRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'author')
-      .select(GET_COMMENTS_ON_POST_SELECT)
-      .where('comment.postId = :id', { id })
-      .andWhere('comment.status = :status', {
-        status: COMMENT_STATUS.APPROVED,
+      .select(BLOG_POST_CONSTANTS.GET_COMMENTS_ON_POST_SELECT)
+      .where('comment.postId = :id', {
+        id,
       });
+
+    if (isPending) {
+      qb.andWhere('comment.status = :status', {
+        status: COMMENT_STATUS.PENDING,
+      });
+    } else {
+      qb.andWhere('comment.status IN (:...statuses)', {
+        statuses: [COMMENT_STATUS.APPROVED, COMMENT_STATUS.PENDING],
+      });
+    }
 
     if (isPagination) {
       const skip = getOffset(page, limit);
@@ -247,17 +261,24 @@ export class BlogpostService {
     return result;
   }
 
-  async saveAttachment(postId: string, files: Express.Multer.File[]) {
+  async saveAttachment(
+    postId: string,
+    files: Express.Multer.File[],
+    manager?: EntityManager,
+  ) {
+    const attachmentRepo = manager
+      ? manager.withRepository(this.attachmentRepository)
+      : this.attachmentRepository;
     let uploads: UploadResult[] = [];
     try {
-      if (files.length) {
+      if (files && files.length) {
         uploads = (
           await this.attachmentService.uploadMultipleAttachments(files)
         ).data;
       }
 
       if (uploads.length) {
-        await this.attachmentRepository.save(
+        await attachmentRepo.save(
           uploads.map((u) => ({
             postId,
             publicId: u.public_id,
@@ -279,7 +300,8 @@ export class BlogpostService {
   async cleanupSoftDeleteRecords() {
     const cutOffDate = new Date();
     cutOffDate.setDate(
-      cutOffDate.getDate() - SOFT_DELETED_POSTS_CLEANUP_INTERVAL,
+      cutOffDate.getDate() -
+        BLOG_POST_CONSTANTS.SOFT_DELETED_POSTS_CLEANUP_INTERVAL,
     );
 
     const expiredPosts = await this.blogPostRepository
