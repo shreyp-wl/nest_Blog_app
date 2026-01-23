@@ -70,7 +70,7 @@ export class RoleManagementController {
     try {
       await this.roleManagementService.requestUpdgrade(
         updateRoleDto.role,
-        user.id,
+        user,
       );
 
       return responseUtils.success(res, {

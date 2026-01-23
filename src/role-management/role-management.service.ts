@@ -14,10 +14,13 @@ import { USER_ROLES } from 'src/user/user-types';
 import { UserEntity } from 'src/modules/database/entities/user.entity';
 import { ERROR_MESSAGES } from 'src/constants/messages.constants';
 import { findExistingEntity } from 'src/utils/db.utils';
+import { DataSource } from 'typeorm';
+import { TokenPayload } from 'src/auth/auth-types';
 
 @Injectable()
 export class RoleManagementService {
   constructor(
+    private dataSource: DataSource,
     @InjectRepository(RoleApproval)
     private readonly roleApprovalRepository: Repository<RoleApproval>,
     @InjectRepository(UserEntity)
@@ -25,19 +28,26 @@ export class RoleManagementService {
   ) {}
 
   //request upgrade
-  async requestUpdgrade(requestedRole: USER_ROLES, id: string): Promise<void> {
-    const user = await findExistingEntity(this.userRepository, {
-      id,
+  async requestUpdgrade(
+    requestedRole: USER_ROLES,
+    user: TokenPayload,
+  ): Promise<void> {
+    const existingUser = await findExistingEntity(this.userRepository, {
+      id: user.id,
     });
 
-    if (!user) {
+    if (!existingUser) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    if (user.role === requestedRole) {
+      throw new ForbiddenException(ERROR_MESSAGES.FORBIDDEN);
     }
 
     const requestExists = await findExistingEntity(
       this.roleApprovalRepository,
       {
-        userId: id,
+        userId: user.id,
         requestedRole,
       },
     );
@@ -48,7 +58,7 @@ export class RoleManagementService {
 
     await this.roleApprovalRepository.save({
       requestedRole,
-      userId: id,
+      userId: user.id,
     });
   }
 
@@ -89,34 +99,41 @@ export class RoleManagementService {
     isApproved: boolean,
     roleApprovalRequestId: string,
   ): Promise<void> {
-    const requestExists = await this.roleApprovalRepository
-      .createQueryBuilder('role')
-      .where('role.id = :roleApprovalRequestId', {
-        roleApprovalRequestId,
-      })
-      .getOne();
+    await this.dataSource.transaction(async (manager) => {
+      const transactionalRoleRepo = manager.withRepository(
+        this.roleApprovalRepository,
+      );
+      const transactionalUserRepo = manager.withRepository(this.userRepository);
 
-    if (!requestExists) {
-      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
-    }
-    const { userId, requestedRole: role } = requestExists;
+      const requestExists = await transactionalRoleRepo
+        .createQueryBuilder('role')
+        .where('role.id = :roleApprovalRequestId', {
+          roleApprovalRequestId,
+        })
+        .getOne();
 
-    if (isApproved) {
-      const user = await this.userRepository.preload({
-        id: userId,
-        role,
-      });
-
-      if (!user) {
+      if (!requestExists) {
         throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
       }
+      const { userId, requestedRole: role } = requestExists;
 
-      await this.userRepository.save(user);
-    }
-    requestExists.status = isApproved
-      ? RoleApprovalStatus.APPROVED
-      : RoleApprovalStatus.REJECTED;
+      if (isApproved) {
+        const user = await transactionalUserRepo.preload({
+          id: userId,
+          role,
+        });
 
-    await this.roleApprovalRepository.save(requestExists);
+        if (!user) {
+          throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+        }
+
+        await transactionalUserRepo.save(user);
+      }
+      requestExists.status = isApproved
+        ? RoleApprovalStatus.APPROVED
+        : RoleApprovalStatus.REJECTED;
+
+      await transactionalRoleRepo.save(requestExists);
+    });
   }
 }

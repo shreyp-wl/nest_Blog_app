@@ -25,7 +25,6 @@ export class LoginUserDto {
   @MinLength(8, {
     message: 'Password must be at least $constraint1 characters long.',
   })
-  @MaxLength(16, { message: 'Password must be at $constraint1 characters.' })
   @ApiProperty({
     example: 'your_secret_password',
     nullable: false,
@@ -88,9 +87,6 @@ export class CreateUserDto {
   @IsString()
   @MinLength(8, {
     message: 'Password must be at least $constraint1 characters long.',
-  })
-  @MaxLength(16, {
-    message: 'Password must be at $constraint1 haracters long.',
   })
   @TrimString()
   readonly password: string;
