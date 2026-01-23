@@ -30,6 +30,7 @@ import {
 } from 'src/common/helper/pagination.helper';
 import {
   CreateBlogPostInput,
+  GetCommentsOnPostInput,
   UpdateBlogPostInput,
 } from './interfaces/blogpost.interface';
 import { COMMENT_STATUS } from 'src/comments/comments-types';
@@ -220,7 +221,7 @@ export class BlogpostService {
 
   async getCommentsOnPost(
     id: string,
-    { page, limit, isPagination }: paginationInput,
+    { isPagination, page, limit, isPending }: GetCommentsOnPostInput,
   ) {
     const existingPost = await findExistingEntity(this.blogPostRepository, {
       id,
@@ -232,10 +233,19 @@ export class BlogpostService {
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'author')
       .select(GET_COMMENTS_ON_POST_SELECT)
-      .where('comment.postId = :id', { id })
-      .andWhere('comment.status = :status', {
-        status: COMMENT_STATUS.APPROVED,
+      .where('comment.postId = :id', {
+        id,
       });
+
+    if (isPending) {
+      qb.andWhere('comment.status = :status', {
+        status: COMMENT_STATUS.PENDING,
+      });
+    } else {
+      qb.andWhere('comment.status IN (:...statuses)', {
+        statuses: [COMMENT_STATUS.APPROVED, COMMENT_STATUS.PENDING],
+      });
+    }
 
     if (isPagination) {
       const skip = getOffset(page, limit);

@@ -4,14 +4,16 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsNotEmpty,
   IsOptional,
-  IsString,
   IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { TrimString } from 'src/modules/decorators/trim-string.decorator';
 
 export class CreateBlogPostDto {
@@ -118,4 +120,15 @@ export class UpdateBlogPostDto {
   @IsOptional()
   @IsUUID()
   categoryId?: string;
+}
+
+export class GetCommentsOnPostDto extends PaginationDto {
+  @ApiPropertyOptional({
+    example: 'true',
+    description: 'specifiy if only panding comments are needed',
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isPending?: boolean;
 }

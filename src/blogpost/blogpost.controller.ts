@@ -13,7 +13,11 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { BlogpostService } from './blogpost.service';
-import { CreateBlogPostDto, UpdateBlogPostDto } from './dto/blogpost.dto';
+import {
+  CreateBlogPostDto,
+  GetCommentsOnPostDto,
+  UpdateBlogPostDto,
+} from './dto/blogpost.dto';
 import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
 import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
 import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
@@ -24,15 +28,13 @@ import {
   GetAllBlogPostResponse,
   GetAllCommentesOnPostResponse,
 } from './blogpost.response';
-import { BLOG_POST_ROUTES, SEARCH_ROUTES } from 'src/constants/routes';
+import { BLOG_POST_ROUTES } from 'src/constants/routes';
 import responseUtils from 'src/utils/response.utils';
 import type { Response } from 'express';
 import { AuthGuard } from 'src/modules/guards/auth.guard';
 import { RolesGuard } from 'src/modules/guards/role.guard';
 import { USER_ROLES } from 'src/user/user-types';
-import { OwnershipGuard } from 'src/modules/guards/ownership.guard';
 import { SearchBlogPostDto } from './dto/search.dto';
-import { SearchResponse } from './search.response';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCommentDto } from 'src/comments/dto/comment.dto';
 import { CommentsService } from 'src/comments/comments.service';
@@ -226,7 +228,8 @@ export class BlogpostController {
   @ApiSwaggerResponse(GetAllCommentesOnPostResponse)
   async getCommentsOnPost(
     @Res() res: Response,
-    @Query() { page, limit, isPagination }: PaginationDto,
+    @Query()
+    { page, limit, isPagination, isPending = false }: GetCommentsOnPostDto,
     @Param('id') id: string,
   ) {
     try {
@@ -234,6 +237,7 @@ export class BlogpostController {
         page,
         limit,
         isPagination,
+        isPending,
       });
       return responseUtils.success(res, {
         data: result,

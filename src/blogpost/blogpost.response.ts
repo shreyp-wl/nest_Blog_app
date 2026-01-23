@@ -4,6 +4,7 @@ import { ApiPropertyWritable } from 'src/modules/swagger/swagger.writable.decora
 import { BLOG_POST_STATUS } from './blogpost-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BlogpostEntity } from 'src/modules/database/entities/blogpost.entity';
+import { COMMENT_STATUS } from 'src/comments/comments-types';
 class UserDataInCommentResponse {
   @Expose()
   @ApiPropertyWritable({
@@ -159,6 +160,12 @@ export class CommentsOnPostResponse {
     example: 'date',
   })
   createdAt: string;
+
+  @Expose()
+  @ApiPropertyWritable({
+    example: COMMENT_STATUS.PENDING,
+  })
+  status: COMMENT_STATUS;
 
   @Expose()
   @ApiPropertyWritable({

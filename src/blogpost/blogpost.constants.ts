@@ -16,6 +16,7 @@ export const GET_COMMENTS_ON_POST_SELECT = [
   'comment.id',
   'comment.content',
   'comment.createdAt',
+  'comment.status',
   'author.id',
   'author.userName',
 ];
