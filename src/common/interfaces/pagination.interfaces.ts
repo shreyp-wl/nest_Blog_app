@@ -1,4 +1,4 @@
-export interface paginationMeta<T> {
+export interface PaginationMeta<T> {
   data: T[];
   meta: {
     totalItems: number;
@@ -9,13 +9,13 @@ export interface paginationMeta<T> {
   };
 }
 
-export interface paginationParams<T> {
+export interface PaginationParams<T> {
   items: T[];
   page: number;
   limit: number;
   total: number;
 }
-export interface paginationInput {
+export interface PaginationInput {
   page: number;
   limit: number;
   isPagination: boolean;

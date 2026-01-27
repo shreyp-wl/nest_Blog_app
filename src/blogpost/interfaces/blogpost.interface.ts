@@ -1,4 +1,4 @@
-import type { paginationInput } from "src/common/interfaces/pagination.interfaces";
+import type { PaginationInput } from "src/common/interfaces/pagination.interfaces";
 
 export interface CreateBlogPostInput {
   title: string;
@@ -15,6 +15,6 @@ export interface UpdateBlogPostInput {
   categoryId?: string;
 }
 
-export interface GetCommentsOnPostInput extends paginationInput {
+export interface GetCommentsOnPostInput extends PaginationInput {
   isPending?: boolean;
 }

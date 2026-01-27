@@ -1,11 +1,11 @@
 import type {
-  paginationMeta,
-  paginationParams,
+  PaginationMeta,
+  PaginationParams,
 } from "../interfaces/pagination.interfaces";
 
 export function getPaginationMeta<T>(
-  paginationParams: paginationParams<T>,
-): paginationMeta<T> {
+  paginationParams: PaginationParams<T>,
+): PaginationMeta<T> {
   const { items, total, page, limit } = paginationParams;
   return {
     data: items,

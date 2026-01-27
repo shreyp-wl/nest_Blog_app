@@ -18,7 +18,7 @@ export class UpdateRoleDto {
   role: USER_ROLES;
 }
 
-export class processRoleApprovalRequestDto {
+export class ProcessRoleApprovalRequestDto {
   @ApiProperty({
     description: "Specify whether you wish to approve or reject the request",
     example: true,

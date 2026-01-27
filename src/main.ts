@@ -1,6 +1,10 @@
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import {
+  SwaggerModule,
+  DocumentBuilder,
+  type OpenAPIObject,
+} from "@nestjs/swagger";
 
 import cookieParser from "cookie-parser";
 
@@ -25,8 +29,17 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  const documentFactory = (): OpenAPIObject =>
+    SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("/api", app, documentFactory);
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void (async () => {
+  try {
+    await bootstrap();
+  } catch (error) {
+    const logger = new Logger("Bootstrap");
+    logger.error("Application failed to start", error);
+    process.exit(1);
+  }
+})();

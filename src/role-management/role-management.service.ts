@@ -21,7 +21,7 @@ import { findExistingEntity } from "src/utils/db.utils";
 @Injectable()
 export class RoleManagementService {
   constructor(
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
     @InjectRepository(RoleApproval)
     private readonly roleApprovalRepository: Repository<RoleApproval>,
     @InjectRepository(UserEntity)
