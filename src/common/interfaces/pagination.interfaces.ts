@@ -1,5 +1,5 @@
-export interface paginationMeta {
-  data: any[];
+export interface paginationMeta<T> {
+  data: T[];
   meta: {
     totalItems: number;
     itemsCount: number;
@@ -9,8 +9,8 @@ export interface paginationMeta {
   };
 }
 
-export interface paginationParams {
-  items: any[];
+export interface paginationParams<T> {
+  items: T[];
   page: number;
   limit: number;
   total: number;

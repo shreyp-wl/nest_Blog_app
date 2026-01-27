@@ -11,38 +11,43 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFiles,
-} from '@nestjs/common';
-import { BlogpostService } from './blogpost.service';
+} from "@nestjs/common";
+import { FilesInterceptor } from "@nestjs/platform-express";
+import { ApiTags } from "@nestjs/swagger";
+
+import { StatusCodes } from "http-status-codes";
+
+import { type TokenPayload } from "src/auth/auth-types";
+import { CommentsService } from "src/comments/comments.service";
+import { CreateCommentDto } from "src/comments/dto/comment.dto";
+import { paginationMeta } from "src/common/interfaces/pagination.interfaces";
+import { uploadOptions } from "src/config/upload.config";
+import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
+import { BLOG_POST_ROUTES } from "src/constants/routes";
+import { UPLOAD_CONSTANTS } from "src/constants/upload.constants";
+import { CommentEntity } from "src/modules/database/entities/comment.entity";
+import { CurrentUser } from "src/modules/decorators/get-current-user.decorator";
+import { AuthGuard } from "src/modules/guards/auth.guard";
+import { RolesGuard } from "src/modules/guards/role.guard";
+import { MessageResponse } from "src/modules/swagger/dtos/response.dtos";
+import { ApiSwaggerResponse } from "src/modules/swagger/swagger.decorator";
+import { USER_ROLES } from "src/user/user-types";
+import responseUtils, { CommonResponseType } from "src/utils/response.utils";
+
+import {
+  BlogPostResponse,
+  GetAllBlogPostResponse,
+  GetAllCommentsOnPostResponse,
+} from "./blogpost.response";
+import { BlogpostService } from "./blogpost.service";
 import {
   CreateBlogPostDto,
   GetCommentsOnPostDto,
   UpdateBlogPostDto,
-} from './dto/blogpost.dto';
-import { SUCCESS_MESSAGES } from 'src/constants/messages.constants';
-import { ApiSwaggerResponse } from 'src/modules/swagger/swagger.decorator';
-import { MessageResponse } from 'src/modules/swagger/dtos/response.dtos';
-import { StatusCodes } from 'http-status-codes';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import {
-  BlogPostResponse,
-  GetAllBlogPostResponse,
-  GetAllCommentesOnPostResponse,
-} from './blogpost.response';
-import { BLOG_POST_ROUTES } from 'src/constants/routes';
-import responseUtils from 'src/utils/response.utils';
-import type { Response } from 'express';
-import { AuthGuard } from 'src/modules/guards/auth.guard';
-import { RolesGuard } from 'src/modules/guards/role.guard';
-import { USER_ROLES } from 'src/user/user-types';
-import { SearchBlogPostDto } from './dto/search.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { CreateCommentDto } from 'src/comments/dto/comment.dto';
-import { CommentsService } from 'src/comments/comments.service';
-import { type TokenPayload } from 'src/auth/auth-types';
-import { CurrentUser } from 'src/modules/decorators/get-current-user.decorator';
-import { UPLOAD_CONSTANTS } from 'src/constants/upload.constants';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { uploadOptions } from 'src/config/upload.config';
+} from "./dto/blogpost.dto";
+import { SearchBlogPostDto } from "./dto/search.dto";
+
+import type { Response } from "express";
 
 @ApiTags(BLOG_POST_ROUTES.BLOG_POST)
 @Controller(BLOG_POST_ROUTES.BLOG_POST)
@@ -69,7 +74,7 @@ export class BlogpostController {
     @Res() res: Response,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() { title, content, summary, categoryId }: CreateBlogPostDto,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.blogpostService.create(
         {
@@ -101,7 +106,7 @@ export class BlogpostController {
   async findAll(
     @Res() res: Response,
     @Query() { q, isPagination, page, limit }: SearchBlogPostDto,
-  ) {
+  ): Promise<Response<CommonResponseType<GetAllBlogPostResponse>>> {
     try {
       const result = await this.blogpostService.findAll(
         {
@@ -124,7 +129,10 @@ export class BlogpostController {
   @ApiSwaggerResponse(BlogPostResponse, {
     status: StatusCodes.OK,
   })
-  async findOne(@Res() res: Response, @Param('slug') slug: string) {
+  async findOne(
+    @Res() res: Response,
+    @Param("slug") slug: string,
+  ): Promise<Response<CommonResponseType<BlogPostResponse>>> {
     try {
       const result = await this.blogpostService.findOne(slug);
       return responseUtils.success(res, {
@@ -142,9 +150,9 @@ export class BlogpostController {
   async update(
     @Res() res: Response,
     @CurrentUser() user: TokenPayload,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() { title, content, summary, categoryId }: UpdateBlogPostDto,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.blogpostService.update(user.id, id, {
         title,
@@ -169,8 +177,8 @@ export class BlogpostController {
   async remove(
     @Res() res: Response,
     @CurrentUser() user: TokenPayload,
-    @Param('id') id: string,
-  ) {
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.blogpostService.remove(id, user);
       return responseUtils.success(res, {
@@ -187,13 +195,13 @@ export class BlogpostController {
   @ApiSwaggerResponse(MessageResponse)
   @Patch(BLOG_POST_ROUTES.PUBLISH)
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.AUTHOR))
-  publish(
+  async publish(
     @Res() res: Response,
     @CurrentUser() user: TokenPayload,
-    @Param('id') id: string,
-  ) {
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
-      this.blogpostService.publish(id, user);
+      await this.blogpostService.publish(id, user);
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.SUCCESS,
@@ -213,9 +221,9 @@ export class BlogpostController {
   async createComment(
     @Res() res: Response,
     @CurrentUser() user: TokenPayload,
-    @Param('id') postId: string,
+    @Param("id") postId: string,
     @Body() { content }: CreateCommentDto,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.commentService.create({ content, authorId: user.id, postId });
       return responseUtils.success(res, {
@@ -231,13 +239,13 @@ export class BlogpostController {
   }
 
   @Get(BLOG_POST_ROUTES.GET_COMMENTS_ON_POST)
-  @ApiSwaggerResponse(GetAllCommentesOnPostResponse)
+  @ApiSwaggerResponse(GetAllCommentsOnPostResponse)
   async getCommentsOnPost(
     @Res() res: Response,
     @Query()
     { page, limit, isPagination, isPending = false }: GetCommentsOnPostDto,
-    @Param('id') id: string,
-  ) {
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<paginationMeta<CommentEntity>>>> {
     try {
       const result = await this.blogpostService.getCommentsOnPost(id, {
         page,
@@ -247,7 +255,7 @@ export class BlogpostController {
       });
       return responseUtils.success(res, {
         data: result,
-        transformWith: GetAllCommentesOnPostResponse,
+        transformWith: GetAllCommentsOnPostResponse,
       });
     } catch (error) {
       return responseUtils.error({ res, error });

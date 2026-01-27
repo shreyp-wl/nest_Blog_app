@@ -1,8 +1,9 @@
-import { Column, Entity, OneToMany, TreeLevelColumn } from 'typeorm';
-import { BaseEntity } from '../base-entity';
-import { BlogpostEntity } from './blogpost.entity';
+import { Column, Entity, OneToMany } from "typeorm";
 
-@Entity('categories')
+import { BaseEntity } from "./base-entity";
+import { BlogpostEntity } from "./blogpost.entity";
+
+@Entity("categories")
 export class CategoryEntity extends BaseEntity {
   @Column({
     unique: true,
