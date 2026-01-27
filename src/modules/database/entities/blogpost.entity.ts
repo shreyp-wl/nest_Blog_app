@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 
 import { BLOG_POST_STATUS } from "../../../blogpost/blogpost-types";
-import { BaseEntity } from "../base-entity";
 
 import { AttachmentEntity } from "./attachment.entity";
+import { BaseEntity } from "./base-entity";
 import { CategoryEntity } from "./category.entity";
 import { CommentEntity } from "./comment.entity";
 import { UserEntity } from "./user.entity";

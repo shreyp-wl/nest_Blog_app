@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 
 import { USER_ROLES } from "../../../user/user-types";
-import { BaseEntity } from "../base-entity";
 
+import { BaseEntity } from "./base-entity";
 import { UserEntity } from "./user.entity";
 
 export enum RoleApprovalStatus {

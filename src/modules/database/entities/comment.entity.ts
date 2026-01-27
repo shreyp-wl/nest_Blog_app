@@ -1,10 +1,8 @@
-import { blob } from "stream/consumers";
-
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 
 import { COMMENT_STATUS } from "../../../comments/comments-types";
-import { BaseEntity } from "../base-entity";
 
+import { BaseEntity } from "./base-entity";
 import { BlogpostEntity } from "./blogpost.entity";
 import { UserEntity } from "./user.entity";
 

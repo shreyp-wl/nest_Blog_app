@@ -1,7 +1,6 @@
-import { Column, Entity, OneToMany, TreeLevelColumn } from "typeorm";
+import { Column, Entity, OneToMany } from "typeorm";
 
-import { BaseEntity } from "../base-entity";
-
+import { BaseEntity } from "./base-entity";
 import { BlogpostEntity } from "./blogpost.entity";
 
 @Entity("categories")

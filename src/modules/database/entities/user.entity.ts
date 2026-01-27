@@ -1,8 +1,8 @@
 import { Entity, Column, OneToMany } from "typeorm";
 
 import { USER_ROLES } from "../../../user/user-types";
-import { BaseEntity } from "../base-entity";
 
+import { BaseEntity } from "./base-entity";
 import { BlogpostEntity } from "./blogpost.entity";
 import { CommentEntity } from "./comment.entity";
 import { RoleApproval } from "./role-management.entity";
