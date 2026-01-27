@@ -20,7 +20,7 @@ import { StatusCodes } from "http-status-codes";
 import { type TokenPayload } from "src/auth/auth-types";
 import { CommentsService } from "src/comments/comments.service";
 import { CreateCommentDto } from "src/comments/dto/comment.dto";
-import { paginationMeta } from "src/common/interfaces/pagination.interfaces";
+import { PaginationMeta } from "src/common/interfaces/pagination.interfaces";
 import { uploadOptions } from "src/config/upload.config";
 import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
 import { BLOG_POST_ROUTES } from "src/constants/routes";
@@ -245,7 +245,7 @@ export class BlogpostController {
     @Query()
     { page, limit, isPagination, isPending = false }: GetCommentsOnPostDto,
     @Param("id") id: string,
-  ): Promise<Response<CommonResponseType<paginationMeta<CommentEntity>>>> {
+  ): Promise<Response<CommonResponseType<PaginationMeta<CommentEntity>>>> {
     try {
       const result = await this.blogpostService.getCommentsOnPost(id, {
         page,

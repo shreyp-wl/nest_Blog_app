@@ -14,8 +14,8 @@ import {
   getPaginationMeta,
 } from "src/common/helper/pagination.helper";
 import {
-  paginationInput,
-  paginationMeta,
+  PaginationInput,
+  PaginationMeta,
 } from "src/common/interfaces/pagination.interfaces";
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
 import { BlogpostEntity } from "src/modules/database/entities/blogpost.entity";
@@ -55,7 +55,7 @@ export class CommentsService {
     page,
     limit,
     isPagination,
-  }: paginationInput): Promise<paginationMeta<CommentEntity>> {
+  }: PaginationInput): Promise<PaginationMeta<CommentEntity>> {
     const qb = this.commentRepository
       .createQueryBuilder("comment")
       .select(COMMENT_CONSTANTS.GET_ALL_COMMENTS_SELECT);

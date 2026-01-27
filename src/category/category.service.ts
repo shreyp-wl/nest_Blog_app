@@ -12,8 +12,8 @@ import {
   getOffset,
 } from "src/common/helper/pagination.helper";
 import {
-  paginationInput,
-  paginationMeta,
+  PaginationInput,
+  PaginationMeta,
 } from "src/common/interfaces/pagination.interfaces";
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
 import { CategoryEntity } from "src/modules/database/entities/category.entity";
@@ -56,7 +56,7 @@ export class CategoryService {
     page,
     limit,
     isPagination,
-  }: paginationInput): Promise<paginationMeta<CategoryEntity>> {
+  }: PaginationInput): Promise<PaginationMeta<CategoryEntity>> {
     const qb = this.categoryRepository.createQueryBuilder("category");
     qb.select(CATEGORY_CONSTANTS.GET_ALL_CATEGORY_SELECT).where(
       "category.isActive = :isActive",

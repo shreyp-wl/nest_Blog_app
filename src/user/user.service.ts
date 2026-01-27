@@ -14,8 +14,8 @@ import {
   getPaginationMeta,
 } from "src/common/helper/pagination.helper";
 import {
-  paginationInput,
-  paginationMeta,
+  PaginationInput,
+  PaginationMeta,
 } from "src/common/interfaces/pagination.interfaces";
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
 import { USER_CONSTANTS } from "src/user/user.constants";
@@ -36,7 +36,7 @@ export class UserService {
     page,
     limit,
     isPagination,
-  }: paginationInput): Promise<paginationMeta<UserEntity>> {
+  }: PaginationInput): Promise<PaginationMeta<UserEntity>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder("user")
       .select(USER_CONSTANTS.USER_SELECT_FIELDS)

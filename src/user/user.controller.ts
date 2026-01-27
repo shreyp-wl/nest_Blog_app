@@ -13,7 +13,7 @@ import { ApiTags } from "@nestjs/swagger";
 
 import { type TokenPayload } from "src/auth/auth-types";
 import { PaginationDto } from "src/common/dto/pagination.dto";
-import { type paginationMeta } from "src/common/interfaces/pagination.interfaces";
+import { type PaginationMeta } from "src/common/interfaces/pagination.interfaces";
 import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
 import { USER_ROUTES } from "src/constants/routes";
 import { type UserEntity } from "src/modules/database/entities/user.entity";
@@ -45,7 +45,7 @@ export class UserController {
   async findAll(
     @Res() res: Response,
     @Query() { page, limit, isPagination }: PaginationDto,
-  ): Promise<Response<CommonResponseType<paginationMeta<UserEntity>>>> {
+  ): Promise<Response<CommonResponseType<PaginationMeta<UserEntity>>>> {
     try {
       const result = await this.userService.findAll({
         page,

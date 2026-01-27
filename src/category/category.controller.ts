@@ -16,7 +16,7 @@ import { type Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { PaginationDto } from "src/common/dto/pagination.dto";
-import { paginationMeta } from "src/common/interfaces/pagination.interfaces";
+import { PaginationMeta } from "src/common/interfaces/pagination.interfaces";
 import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
 import { CategoryEntity } from "src/modules/database/entities/category.entity";
 import { AuthGuard } from "src/modules/guards/auth.guard";
@@ -64,7 +64,7 @@ export class CategoryController {
   async findAll(
     @Res() res: Response,
     @Query() { page, limit, isPagination }: PaginationDto,
-  ): Promise<Response<CommonResponseType<paginationMeta<CategoryEntity>>>> {
+  ): Promise<Response<CommonResponseType<PaginationMeta<CategoryEntity>>>> {
     try {
       const result = await this.categoryService.findAll({
         page,

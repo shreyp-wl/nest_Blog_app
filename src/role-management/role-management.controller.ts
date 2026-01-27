@@ -25,7 +25,7 @@ import responseUtils, { CommonResponseType } from "src/utils/response.utils";
 
 import {
   UpdateRoleDto,
-  processRoleApprovalRequestDto,
+  ProcessRoleApprovalRequestDto,
 } from "./dto/role-management.dto";
 import {
   MyRequestsResponse,
@@ -103,7 +103,7 @@ export class RoleManagementController {
   @UseGuards(RolesGuard(USER_ROLES.ADMIN))
   async processRequest(
     @Res() res: Response,
-    @Body() { isApproved }: processRoleApprovalRequestDto,
+    @Body() { isApproved }: ProcessRoleApprovalRequestDto,
     @Param("id") roleApprovalRequestId: string,
   ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {

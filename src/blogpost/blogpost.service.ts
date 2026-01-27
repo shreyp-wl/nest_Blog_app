@@ -16,8 +16,8 @@ import {
   getPaginationMeta,
 } from "src/common/helper/pagination.helper";
 import {
-  paginationInput,
-  paginationMeta,
+  PaginationInput,
+  PaginationMeta,
 } from "src/common/interfaces/pagination.interfaces";
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
 import { AttachmentEntity } from "src/modules/database/entities/attachment.entity";
@@ -96,9 +96,9 @@ export class BlogpostService {
   }
 
   async findAll(
-    { page, limit, isPagination }: paginationInput,
+    { page, limit, isPagination }: PaginationInput,
     q?: string,
-  ): Promise<paginationMeta<BlogpostEntity>> {
+  ): Promise<PaginationMeta<BlogpostEntity>> {
     const qb = this.blogPostRepository
       .createQueryBuilder("post")
       .leftJoin("post.attachments", "attachment")
@@ -229,7 +229,7 @@ export class BlogpostService {
   async getCommentsOnPost(
     id: string,
     { isPagination, page, limit, isPending }: GetCommentsOnPostInput,
-  ): Promise<paginationMeta<CommentEntity>> {
+  ): Promise<PaginationMeta<CommentEntity>> {
     const existingPost = await findExistingEntity(this.blogPostRepository, {
       id,
     });
