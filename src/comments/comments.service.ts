@@ -11,9 +11,12 @@ import { TokenPayload } from "src/auth/auth-types";
 import { BLOG_POST_STATUS } from "src/blogpost/blogpost-types";
 import {
   getOffset,
-  getPageinationMeta,
+  getPaginationMeta,
 } from "src/common/helper/pagination.helper";
-import { paginationInput } from "src/common/interfaces/pagination.interfaces";
+import {
+  paginationInput,
+  paginationMeta,
+} from "src/common/interfaces/pagination.interfaces";
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
 import { BlogpostEntity } from "src/modules/database/entities/blogpost.entity";
 import { CommentEntity } from "src/modules/database/entities/comment.entity";
@@ -35,7 +38,7 @@ export class CommentsService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
   ) {}
-  async create(createCommentInput: CreateCommentInput) {
+  async create(createCommentInput: CreateCommentInput): Promise<void> {
     const existingPost = await findExistingEntity(this.blogpostRepository, {
       id: createCommentInput.postId,
       status: BLOG_POST_STATUS.PUBLISHED,
@@ -48,7 +51,11 @@ export class CommentsService {
     await this.commentRepository.save(comment);
   }
 
-  async findAll({ page, limit, isPagination }: paginationInput) {
+  async findAll({
+    page,
+    limit,
+    isPagination,
+  }: paginationInput): Promise<paginationMeta<CommentEntity>> {
     const qb = this.commentRepository
       .createQueryBuilder("comment")
       .select(COMMENT_CONSTANTS.GET_ALL_COMMENTS_SELECT);
@@ -58,11 +65,11 @@ export class CommentsService {
     }
     const [items, total] = await qb.getManyAndCount();
 
-    const result = getPageinationMeta({ items, page, limit, total });
+    const result = getPaginationMeta({ items, page, limit, total });
     return result;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<CommentEntity | null> {
     const existingComment = await findExistingEntity(this.commentRepository, {
       id,
     });
@@ -81,7 +88,7 @@ export class CommentsService {
     userId: string,
     commentId: string,
     updateCommentInput: UpdateCommentInput,
-  ) {
+  ): Promise<void> {
     const comment = await this.commentRepository
       .createQueryBuilder("comment")
       .leftJoinAndSelect("comment.blogPost", "blogpost")
@@ -114,7 +121,7 @@ export class CommentsService {
     await this.commentRepository.save(comment);
   }
 
-  async remove(id: string, user: TokenPayload) {
+  async remove(id: string, user: TokenPayload): Promise<void> {
     const comment = await this.commentRepository
       .createQueryBuilder("comment")
       .where("comment.id = :id", {

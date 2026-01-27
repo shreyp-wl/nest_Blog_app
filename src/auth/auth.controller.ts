@@ -26,7 +26,7 @@ import { CurrentUser } from "src/modules/decorators/get-current-user.decorator";
 import { AuthGuard } from "src/modules/guards/auth.guard";
 import { MessageResponse } from "src/modules/swagger/dtos/response.dtos";
 import { ApiSwaggerResponse } from "src/modules/swagger/swagger.decorator";
-import responseUtils from "src/utils/response.utils";
+import responseUtils, { CommonResponseType } from "src/utils/response.utils";
 
 import { type TokenPayload } from "./auth-types";
 import { CurrentUserResponse } from "./auth.response";
@@ -42,7 +42,10 @@ export class AuthController {
   @ApiSwaggerResponse(CurrentUserResponse)
   @Get(AUTH_ROUTES.ME)
   @UseGuards(AuthGuard)
-  getMe(@Res() res: Response, @CurrentUser() user: TokenPayload) {
+  getMe(
+    @Res() res: Response,
+    @CurrentUser() user: TokenPayload,
+  ): Response<CommonResponseType<TokenPayload>> {
     return responseUtils.success(res, {
       data: user,
       transformWith: CurrentUserResponse,
@@ -54,7 +57,10 @@ export class AuthController {
     type: CreateUserDto,
   })
   @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.CREATED })
-  async register(@Res() res: Response, @Body() user: CreateUserDto) {
+  async register(
+    @Res() res: Response,
+    @Body() user: CreateUserDto,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.authService.register(user);
       return responseUtils.success(res, {
@@ -69,7 +75,10 @@ export class AuthController {
 
   @ApiSwaggerResponse(MessageResponse)
   @Post(AUTH_ROUTES.LOGIN)
-  async login(@Res() res: Response, @Body() { email, password }: LoginUserDto) {
+  async login(
+    @Res() res: Response,
+    @Body() { email, password }: LoginUserDto,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       const { accessToken, refreshToken } = await this.authService.login({
         email,
@@ -90,11 +99,14 @@ export class AuthController {
 
   @ApiSwaggerResponse(MessageResponse)
   @Post(AUTH_ROUTES.REFRESH)
-  async refresh(@Res() res: Response, @Req() req: Request) {
+  async refresh(
+    @Res() res: Response,
+    @Req() req: Request,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     const oldRefreshToken: unknown = req.cookies["refreshToken"];
 
     if (typeof oldRefreshToken !== "string") {
-      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_REFRESHTOKEN);
+      throw new UnauthorizedException(ERROR_MESSAGES.INVALID_REFRESH_TOKEN);
     }
 
     try {
@@ -115,7 +127,7 @@ export class AuthController {
 
   @ApiSwaggerResponse(MessageResponse, { status: StatusCodes.NO_CONTENT })
   @Post(AUTH_ROUTES.LOGOUT)
-  logout(@Res() res: Response) {
+  logout(@Res() res: Response): Response<CommonResponseType<MessageResponse>> {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 

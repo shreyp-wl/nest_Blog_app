@@ -19,7 +19,7 @@ import { UPLOAD_ROUTES } from "src/constants/routes";
 import { UPLOAD_CONSTANTS } from "src/constants/upload.constants";
 import { MessageResponse } from "src/modules/swagger/dtos/response.dtos";
 import { ApiSwaggerResponse } from "src/modules/swagger/swagger.decorator";
-import responseUtils from "src/utils/response.utils";
+import responseUtils, { CommonResponseType } from "src/utils/response.utils";
 
 import { UploadMultipleResponse } from "./uploads.response";
 import { UploadsService } from "./uploads.service";
@@ -43,7 +43,7 @@ export class UploadsController {
   async uploadMultipleAttachment(
     @Res() res: Response,
     @UploadedFiles() files: Express.Multer.File[],
-  ) {
+  ): Promise<Response<CommonResponseType<UploadMultipleResponse>>> {
     try {
       const result = await this.uploadsService.uploadMultipleAttachments(files);
       return responseUtils.success(res, {
@@ -52,7 +52,7 @@ export class UploadsController {
         status: StatusCodes.CREATED,
       });
     } catch (error) {
-      responseUtils.error({ res, error });
+      return responseUtils.error({ res, error });
     }
   }
 
@@ -62,7 +62,7 @@ export class UploadsController {
     @Res() res: Response,
     @Param("folder") folder: string,
     @Param("id") id: string,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       const publicId = `${folder}/${id}`;
       await this.uploadsService.deleteSingleAttachment(publicId);
@@ -73,7 +73,7 @@ export class UploadsController {
         transformWith: MessageResponse,
       });
     } catch (error) {
-      responseUtils.error({ res, error });
+      return responseUtils.error({ res, error });
     }
   }
 }

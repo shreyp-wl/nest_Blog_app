@@ -6,7 +6,6 @@ import {
   IsNotEmpty,
   IsOptional,
   MaxLength,
-  Min,
   MinLength,
 } from "class-validator";
 

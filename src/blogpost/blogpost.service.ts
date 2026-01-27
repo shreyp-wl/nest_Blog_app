@@ -13,7 +13,7 @@ import { COMMENT_STATUS } from "src/comments/comments-types";
 import { SORT_ORDER, SORTBY } from "src/common/enums";
 import {
   getOffset,
-  getPageinationMeta,
+  getPaginationMeta,
 } from "src/common/helper/pagination.helper";
 import {
   paginationInput,
@@ -98,7 +98,7 @@ export class BlogpostService {
   async findAll(
     { page, limit, isPagination }: paginationInput,
     q?: string,
-  ): Promise<paginationMeta> {
+  ): Promise<paginationMeta<BlogpostEntity>> {
     const qb = this.blogPostRepository
       .createQueryBuilder("post")
       .leftJoin("post.attachments", "attachment")
@@ -117,12 +117,12 @@ export class BlogpostService {
       qb.skip(offset).take(limit);
     }
     const [items, total] = await qb.getManyAndCount();
-    const result = getPageinationMeta({ items, page, limit, total });
+    const result = getPaginationMeta({ items, page, limit, total });
 
     return result;
   }
 
-  async findOne(slug: string) {
+  async findOne(slug: string): Promise<BlogpostEntity> {
     const result = await this.blogPostRepository
       .createQueryBuilder("post")
       .leftJoin("post.attachments", "attachment")
@@ -143,7 +143,7 @@ export class BlogpostService {
     userId: string,
     id: string,
     updateBlogPostInput: UpdateBlogPostInput,
-  ) {
+  ): Promise<void> {
     const blogPost = await this.blogPostRepository
       .createQueryBuilder("post")
       .where("post.id = :id", {
@@ -189,7 +189,7 @@ export class BlogpostService {
     await this.blogPostRepository.save(blogPost);
   }
 
-  async remove(id: string, user: TokenPayload) {
+  async remove(id: string, user: TokenPayload): Promise<void> {
     const blogPost = await this.blogPostRepository.findOne({
       where: {
         id,
@@ -209,7 +209,7 @@ export class BlogpostService {
     await this.blogPostRepository.softRemove(blogPost);
   }
 
-  async publish(id: string, user: TokenPayload) {
+  async publish(id: string, user: TokenPayload): Promise<void> {
     const blogPost = await this.blogPostRepository.preload({
       id,
       status: BLOG_POST_STATUS.PUBLISHED,
@@ -229,7 +229,7 @@ export class BlogpostService {
   async getCommentsOnPost(
     id: string,
     { isPagination, page, limit, isPending }: GetCommentsOnPostInput,
-  ) {
+  ): Promise<paginationMeta<CommentEntity>> {
     const existingPost = await findExistingEntity(this.blogPostRepository, {
       id,
     });
@@ -260,7 +260,7 @@ export class BlogpostService {
     }
 
     const [items, total] = await qb.getManyAndCount();
-    const result = getPageinationMeta({ items, page, limit, total });
+    const result = getPaginationMeta({ items, page, limit, total });
     return result;
   }
 
@@ -268,13 +268,13 @@ export class BlogpostService {
     postId: string,
     files: Express.Multer.File[],
     manager?: EntityManager,
-  ) {
+  ): Promise<void> {
     const attachmentRepo = manager
       ? manager.withRepository(this.attachmentRepository)
       : this.attachmentRepository;
     let uploads: UploadResult[] = [];
     try {
-      if (files && files.length) {
+      if (files.length) {
         uploads = (
           await this.attachmentService.uploadMultipleAttachments(files)
         ).data;
@@ -300,7 +300,7 @@ export class BlogpostService {
     }
   }
 
-  async cleanupSoftDeleteRecords() {
+  async cleanupSoftDeleteRecords(): Promise<void> {
     const cutOffDate = new Date();
     cutOffDate.setDate(
       cutOffDate.getDate() -

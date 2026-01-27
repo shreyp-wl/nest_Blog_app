@@ -5,6 +5,7 @@ import {
   UploadApiErrorResponse,
   UploadApiResponse,
 } from "cloudinary";
+// eslint-disable-next-line @cspell/spellchecker
 import * as streamifier from "streamifier";
 
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
@@ -17,7 +18,7 @@ export class UploadsService {
   async uploadMultipleAttachments(files: Express.Multer.File[]): Promise<{
     data: UploadResult[];
   }> {
-    if (!files || files.length === 0) {
+    if (files.length === 0) {
       throw new BadRequestException(ERROR_MESSAGES.BAD_REQUEST);
     }
 
@@ -27,14 +28,14 @@ export class UploadsService {
           const uploadStream = cloudinary.uploader.upload_stream(
             {
               folder: UPLOAD_CONSTANTS.UPLOAD_DIRECTORY,
-              resource_type: UPLOAD_CONSTANTS.RESOURCE_TYPE as any,
+              resource_type: "image",
             },
             (error, result) => {
-              if (error) return reject(error);
+              if (error) return reject(error as Error);
               if (result) resolve(result);
             },
           );
-
+          // eslint-disable-next-line @cspell/spellchecker
           streamifier.createReadStream(file.buffer).pipe(uploadStream);
         },
       );
@@ -51,14 +52,14 @@ export class UploadsService {
     };
   }
 
-  async deleteSingleAttachment(publicId: string) {
+  async deleteSingleAttachment(publicId: string): Promise<void> {
     return await cloudinary.uploader.destroy(publicId, {
       resource_type: UPLOAD_CONSTANTS.RESOURCE_TYPE,
     });
   }
 
-  async deleteMultipleAttachments(publicIds: string[]) {
-    if (!publicIds || publicIds.length === 0) {
+  async deleteMultipleAttachments(publicIds: string[]): Promise<void> {
+    if (publicIds.length === 0) {
       throw new BadRequestException(ERROR_MESSAGES.BAD_REQUEST);
     }
 

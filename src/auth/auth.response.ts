@@ -6,7 +6,7 @@ import { ApiPropertyWritable } from "./../modules/swagger/swagger.writable.decor
 
 export class CurrentUserResponse {
   @ApiPropertyWritable({
-    example: "h14g5g23-fdsdfbd-23bdbf",
+    example: "userId",
     description: "user ID",
   })
   @Expose()

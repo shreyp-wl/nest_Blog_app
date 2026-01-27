@@ -25,10 +25,6 @@ export class AccessRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const reqUser = request.user;
 
-    if (!reqUser?.id) {
-      throw new UnauthorizedException();
-    }
-
     const user = await this.userRepository.findOne({
       where: { id: reqUser.id },
       select: ["id", "role"],

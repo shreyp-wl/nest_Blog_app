@@ -8,10 +8,13 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Not, Repository } from "typeorm";
 
 import {
-  getPageinationMeta,
+  getPaginationMeta,
   getOffset,
 } from "src/common/helper/pagination.helper";
-import { paginationInput } from "src/common/interfaces/pagination.interfaces";
+import {
+  paginationInput,
+  paginationMeta,
+} from "src/common/interfaces/pagination.interfaces";
 import { ERROR_MESSAGES } from "src/constants/messages.constants";
 import { CategoryEntity } from "src/modules/database/entities/category.entity";
 import { generateSlug } from "src/utils/blogpost.utils";
@@ -49,7 +52,11 @@ export class CategoryService {
     await this.categoryRepository.save(category);
   }
 
-  async findAll({ page, limit, isPagination }: paginationInput) {
+  async findAll({
+    page,
+    limit,
+    isPagination,
+  }: paginationInput): Promise<paginationMeta<CategoryEntity>> {
     const qb = this.categoryRepository.createQueryBuilder("category");
     qb.select(CATEGORY_CONSTANTS.GET_ALL_CATEGORY_SELECT).where(
       "category.isActive = :isActive",
@@ -63,11 +70,11 @@ export class CategoryService {
       qb.skip(offSet).take(limit);
     }
     const [items, total] = await qb.getManyAndCount();
-    const result = getPageinationMeta({ items, total, page, limit });
+    const result = getPaginationMeta({ items, total, page, limit });
     return result;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<CategoryEntity | null> {
     const qb = this.categoryRepository.createQueryBuilder("category");
     qb.select(CATEGORY_CONSTANTS.CATEGORY_SELECT).where(
       "category.id = :id AND category.isActive = :isActive",
@@ -86,7 +93,10 @@ export class CategoryService {
     return result;
   }
 
-  async update(id: string, updateCategoryInput: UpdateCategoryInput) {
+  async update(
+    id: string,
+    updateCategoryInput: UpdateCategoryInput,
+  ): Promise<void> {
     const category = await this.categoryRepository.findOne({
       where: { id },
     });
@@ -120,11 +130,9 @@ export class CategoryService {
     }
 
     await this.categoryRepository.save(category);
-
-    return category;
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     const category = await this.categoryRepository.findOne({
       where: {
         id,

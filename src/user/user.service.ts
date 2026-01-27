@@ -1,5 +1,3 @@
-import { copyFile } from "fs";
-
 import {
   ConflictException,
   ForbiddenException,
@@ -13,7 +11,7 @@ import { Repository } from "typeorm";
 import { SORT_ORDER, SORTBY } from "src/common/enums";
 import {
   getOffset,
-  getPageinationMeta,
+  getPaginationMeta,
 } from "src/common/helper/pagination.helper";
 import {
   paginationInput,
@@ -25,7 +23,7 @@ import { findExistingEntity } from "src/utils/db.utils";
 
 import { UserEntity } from "../modules/database/entities/user.entity";
 
-import { updateUserParams } from "./user-types";
+import { UpdateUserParams } from "./interfaces/user.interface";
 
 @Injectable()
 export class UserService {
@@ -38,7 +36,7 @@ export class UserService {
     page,
     limit,
     isPagination,
-  }: paginationInput): Promise<paginationMeta> {
+  }: paginationInput): Promise<paginationMeta<UserEntity>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder("user")
       .select(USER_CONSTANTS.USER_SELECT_FIELDS)
@@ -49,7 +47,7 @@ export class UserService {
       queryBuilder.skip(offset).take(limit);
     }
     const [items, total] = await queryBuilder.getManyAndCount();
-    const result = getPageinationMeta({ items, page, limit, total });
+    const result = getPaginationMeta({ items, page, limit, total });
 
     return result;
   }
@@ -73,7 +71,7 @@ export class UserService {
   async update(
     userId: string,
     id: string,
-    updateUserParams: updateUserParams,
+    updateUserParams: UpdateUserParams,
   ): Promise<void> {
     if (userId !== id) {
       throw new ForbiddenException(ERROR_MESSAGES.FORBIDDEN);

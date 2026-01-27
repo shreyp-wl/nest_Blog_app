@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -14,10 +13,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { StatusCodes } from "http-status-codes";
 
 import { type TokenPayload } from "src/auth/auth-types";
-import {
-  ERROR_MESSAGES,
-  SUCCESS_MESSAGES,
-} from "src/constants/messages.constants";
+import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
 import { ROLE_MANAGEMENT_ROUTES } from "src/constants/routes";
 import { CurrentUser } from "src/modules/decorators/get-current-user.decorator";
 import { AuthGuard } from "src/modules/guards/auth.guard";
@@ -25,7 +21,7 @@ import { RolesGuard } from "src/modules/guards/role.guard";
 import { MessageResponse } from "src/modules/swagger/dtos/response.dtos";
 import { ApiSwaggerResponse } from "src/modules/swagger/swagger.decorator";
 import { USER_ROLES } from "src/user/user-types";
-import responseUtils from "src/utils/response.utils";
+import responseUtils, { CommonResponseType } from "src/utils/response.utils";
 
 import {
   UpdateRoleDto,
@@ -48,7 +44,10 @@ export class RoleManagementController {
   // get my requests
   @ApiSwaggerResponse(MyRequestsResponse)
   @Get(ROLE_MANAGEMENT_ROUTES.MY_REQUESTS)
-  async getMyRequests(@Res() res: Response, @CurrentUser() user: TokenPayload) {
+  async getMyRequests(
+    @Res() res: Response,
+    @CurrentUser() user: TokenPayload,
+  ): Promise<Response<CommonResponseType<MyRequestsResponse>>> {
     try {
       const result = await this.roleManagementService.getMyRequests(user.id);
 
@@ -68,11 +67,7 @@ export class RoleManagementController {
     @Res() res: Response,
     @Body() updateRoleDto: UpdateRoleDto,
     @CurrentUser() user: TokenPayload,
-  ) {
-    if (!updateRoleDto.role) {
-      throw new BadRequestException(ERROR_MESSAGES.BAD_REQUEST);
-    }
-
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.roleManagementService.requestUpgrade(updateRoleDto.role, user);
 
@@ -89,7 +84,9 @@ export class RoleManagementController {
   @ApiSwaggerResponse(PendingRequestsResponse, {})
   @Get(ROLE_MANAGEMENT_ROUTES.PENDING_REQUESTS)
   @UseGuards(RolesGuard(USER_ROLES.ADMIN))
-  async getPendingRequest(@Res() res: Response) {
+  async getPendingRequest(
+    @Res() res: Response,
+  ): Promise<Response<CommonResponseType<PendingRequestsResponse>>> {
     try {
       const result = await this.roleManagementService.getPendingRequest();
       return responseUtils.success(res, {
@@ -108,7 +105,7 @@ export class RoleManagementController {
     @Res() res: Response,
     @Body() { isApproved }: processRoleApprovalRequestDto,
     @Param("id") roleApprovalRequestId: string,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.roleManagementService.processRequest(
         isApproved,

@@ -19,6 +19,7 @@ export const BLOG_POST_CONSTANTS = {
     "author.id",
     "author.userName",
   ],
+  // eslint-disable-next-line @cspell/spellchecker
   SEARCH_QUERY: `(post.title ILIKE :q OR post.content ILIKE :q)`,
   SOFT_DELETED_POSTS_CLEANUP_INTERVAL: 30,
 };

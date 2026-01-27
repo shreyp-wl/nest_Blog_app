@@ -13,13 +13,13 @@ export const SUCCESS_MESSAGES = {
 export const ERROR_MESSAGES = {
   UNAUTHORIZED: "Unauthorized",
   BAD_REQUEST: "Invalid input parameters",
-  CONFLICT: "A rosouce already exists with provided details",
+  CONFLICT: "A resource already exists with provided details",
   NOT_FOUND: "No resource found with provided data",
   FORBIDDEN: "Access denied: You do not have the required permissions.",
   ALREADY_EXISTS_ACCOUNT: "Account Already Exists.",
   INVALID_EMAIL: "Invalid email address.",
   INVALID_PASSWORD: "Invalid Password.",
-  INVALID_REFRESHTOKEN: "Invalid refreshtoken.",
+  INVALID_REFRESH_TOKEN: "Invalid refresh token.",
   INVALID_CONTACT_NO: "Invalid contact number.",
   PASSWORD_WEAK:
     "Password must contain 8 characters, one uppercase, one lowercase, one number and one special case character.",

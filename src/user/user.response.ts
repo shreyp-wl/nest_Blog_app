@@ -14,7 +14,7 @@ export class UserResponse {
   id: string;
 
   @Expose()
-  @ApiPropertyWritable({ example: "johndoe" })
+  @ApiPropertyWritable({ example: "john_doe" })
   userName: string;
 
   @Expose()

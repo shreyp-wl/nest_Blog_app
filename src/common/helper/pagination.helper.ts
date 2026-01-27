@@ -3,9 +3,9 @@ import type {
   paginationParams,
 } from "../interfaces/pagination.interfaces";
 
-export function getPageinationMeta(
-  paginationParams: paginationParams,
-): paginationMeta {
+export function getPaginationMeta<T>(
+  paginationParams: paginationParams<T>,
+): paginationMeta<T> {
   const { items, total, page, limit } = paginationParams;
   return {
     data: items,
@@ -19,6 +19,6 @@ export function getPageinationMeta(
   };
 }
 
-export function getOffset(page: number, limit: number) {
+export function getOffset(page: number, limit: number): number {
   return (page - 1) * limit;
 }

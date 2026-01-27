@@ -18,7 +18,7 @@ export class CreateCommentDto {
     description: "Write content of your comment",
   })
   @MinLength(1, {
-    message: "content length must be greatet than $constraint1 characters.",
+    message: "content length must be greater than $constraint1 characters.",
   })
   @MaxLength(100, {
     message: "comment can only be $constraint1 characters long.",
@@ -36,7 +36,7 @@ export class UpdateCommentDto {
   })
   @TrimString()
   @MinLength(1, {
-    message: "content length must be greatet than $constraint1 characters.",
+    message: "content length must be greater than $constraint1 characters.",
   })
   @MaxLength(100, {
     message: "comment can only be $constraint1 characters long.",

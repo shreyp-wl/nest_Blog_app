@@ -14,8 +14,8 @@ import { USER_CONSTANTS } from "src/user/user.constants";
 import { AuthUtils } from "src/utils/auth.utils";
 
 import {
-  createUserParams,
-  loginUserParams,
+  CreateUserParams,
+  LoginUserParams,
   AuthResponse,
   TokenPayload,
 } from "./auth-types";
@@ -28,7 +28,7 @@ export class AuthService {
     private readonly authUtils: AuthUtils,
   ) {}
 
-  async login(loginUserParams: loginUserParams): Promise<AuthResponse> {
+  async login(loginUserParams: LoginUserParams): Promise<AuthResponse> {
     const { email, password } = loginUserParams;
     const user = await this.userRepository
       .createQueryBuilder("user")
@@ -75,7 +75,7 @@ export class AuthService {
     password,
     firstName,
     lastName,
-  }: createUserParams): Promise<void> {
+  }: CreateUserParams): Promise<void> {
     const existingUser = await this.userRepository
       .createQueryBuilder("user")
       .select(USER_CONSTANTS.REGISTER_SELECT_FIELDS)

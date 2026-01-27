@@ -1,9 +1,4 @@
-import {
-  ApiProperty,
-  ApiPropertyOptional,
-  OmitType,
-  PartialType,
-} from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 import { Type } from "class-transformer";
 import {
@@ -48,7 +43,7 @@ export class CreateBlogPostDto {
     description: "Content of your blogpost",
   })
   @MinLength(100, {
-    message: "A blogpost's content must have atleast $constraint1 characters",
+    message: "A blogpost's content must have at least $constraint1 characters",
   })
   @TrimString()
   @MaxLength(50_000, {
@@ -107,7 +102,7 @@ export class UpdateBlogPostDto {
     message: "A blogpost's content must be less than $constraint1 characters",
   })
   @MinLength(100, {
-    message: "A blogpost's content must have atleast $constraint1 characters",
+    message: "A blogpost's content must have at least $constraint1 characters",
   })
   @TrimString()
   @IsSafeText()
@@ -138,7 +133,7 @@ export class UpdateBlogPostDto {
 export class GetCommentsOnPostDto extends PaginationDto {
   @ApiPropertyOptional({
     example: "true",
-    description: "specify if only panding comments are needed",
+    description: "specify if only pending comments are needed",
   })
   @IsOptional()
   @IsBoolean()

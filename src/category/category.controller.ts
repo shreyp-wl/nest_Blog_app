@@ -16,13 +16,15 @@ import { type Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { PaginationDto } from "src/common/dto/pagination.dto";
+import { paginationMeta } from "src/common/interfaces/pagination.interfaces";
 import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
+import { CategoryEntity } from "src/modules/database/entities/category.entity";
 import { AuthGuard } from "src/modules/guards/auth.guard";
 import { RolesGuard } from "src/modules/guards/role.guard";
 import { MessageResponse } from "src/modules/swagger/dtos/response.dtos";
 import { ApiSwaggerResponse } from "src/modules/swagger/swagger.decorator";
 import { USER_ROLES } from "src/user/user-types";
-import responseUtils from "src/utils/response.utils";
+import responseUtils, { CommonResponseType } from "src/utils/response.utils";
 
 import { CATEGORY_ROUTES } from "./../constants/routes";
 import { CategoryResponse, GetAllCategoryResponse } from "./category.response";
@@ -42,7 +44,7 @@ export class CategoryController {
   async create(
     @Res() res: Response,
     @Body() { name, description }: CreateCategoryDto,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.categoryService.create({ name, description });
       return responseUtils.success(res, {
@@ -62,7 +64,7 @@ export class CategoryController {
   async findAll(
     @Res() res: Response,
     @Query() { page, limit, isPagination }: PaginationDto,
-  ) {
+  ): Promise<Response<CommonResponseType<paginationMeta<CategoryEntity>>>> {
     try {
       const result = await this.categoryService.findAll({
         page,
@@ -80,7 +82,10 @@ export class CategoryController {
 
   @Get(CATEGORY_ROUTES.GET_ONE)
   @ApiSwaggerResponse(CategoryResponse)
-  async findOne(@Res() res: Response, @Param("id") id: string) {
+  async findOne(
+    @Res() res: Response,
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<CategoryEntity>>> {
     try {
       const result = await this.categoryService.findOne(id);
       return responseUtils.success(res, {
@@ -95,13 +100,13 @@ export class CategoryController {
   @Patch(CATEGORY_ROUTES.UPDATE)
   @ApiSwaggerResponse(MessageResponse)
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.ADMIN))
-  update(
+  async update(
     @Res() res: Response,
     @Param("id") id: string,
     @Body() { name, description, isActive }: UpdateCategoryDto,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
-      this.categoryService.update(id, { name, description, isActive });
+      await this.categoryService.update(id, { name, description, isActive });
       return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.SUCCESS,
@@ -116,7 +121,10 @@ export class CategoryController {
   @Delete(CATEGORY_ROUTES.DELETE)
   @ApiSwaggerResponse(MessageResponse)
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.ADMIN))
-  async remove(@Res() res: Response, @Param("id") id: string) {
+  async remove(
+    @Res() res: Response,
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.categoryService.remove(id);
       return responseUtils.success(res, {

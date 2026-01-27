@@ -3,9 +3,3 @@ export enum USER_ROLES {
   AUTHOR = "author",
   READER = "reader",
 }
-
-export interface updateUserParams {
-  userName?: string;
-  firstName?: string;
-  lastName?: string;
-}

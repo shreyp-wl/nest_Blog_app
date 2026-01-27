@@ -1,13 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiPropertyOptional } from "@nestjs/swagger";
 
-import { IsNotEmpty, IsOptional, MaxLength, MinLength } from "class-validator";
+import { IsOptional, MaxLength, MinLength } from "class-validator";
 
 import { IsSafeText } from "src/modules/decorators/safe-text.decorator";
 import { TrimString } from "src/modules/decorators/trim-string.decorator";
 
-import { updateUserParams } from "../user-types";
+import { UpdateUserParams } from "../interfaces/user.interface";
 
-export class UpdateUserDto implements updateUserParams {
+export class UpdateUserDto implements UpdateUserParams {
   @IsOptional()
   @ApiPropertyOptional({
     example: "john_doe",
@@ -26,7 +26,7 @@ export class UpdateUserDto implements updateUserParams {
   @IsOptional()
   @ApiPropertyOptional({
     example: "john",
-    description: "Your firstname",
+    description: "Your firstName",
   })
   @TrimString()
   @IsSafeText()
@@ -35,7 +35,7 @@ export class UpdateUserDto implements updateUserParams {
   @IsOptional()
   @ApiPropertyOptional({
     example: "doe",
-    description: "Your lastname",
+    description: "Your lastName",
   })
   @TrimString()
   @IsSafeText()

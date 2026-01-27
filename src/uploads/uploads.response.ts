@@ -5,7 +5,7 @@ import { ApiPropertyWritable } from "src/modules/swagger/swagger.writable.decora
 export class UploadResponse {
   @Expose()
   @ApiPropertyWritable({
-    example: "uploads/nsrgnsepsdfnadvnfdnv",
+    example: "uploads/public_id",
   })
   public_id: string;
   @Expose()

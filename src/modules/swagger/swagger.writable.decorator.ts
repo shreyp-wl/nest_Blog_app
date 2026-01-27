@@ -1,5 +1,4 @@
-import type { ApiPropertyOptions } from "@nestjs/swagger";
-import { ApiProperty } from "@nestjs/swagger";
+import { type ApiPropertyOptions, ApiProperty } from "@nestjs/swagger";
 
 /**
  * Custom decorator that extends ApiProperty with readOnly set to false by default.

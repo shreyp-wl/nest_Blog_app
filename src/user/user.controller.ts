@@ -13,14 +13,18 @@ import { ApiTags } from "@nestjs/swagger";
 
 import { type TokenPayload } from "src/auth/auth-types";
 import { PaginationDto } from "src/common/dto/pagination.dto";
+import { type paginationMeta } from "src/common/interfaces/pagination.interfaces";
 import { SUCCESS_MESSAGES } from "src/constants/messages.constants";
 import { USER_ROUTES } from "src/constants/routes";
+import { type UserEntity } from "src/modules/database/entities/user.entity";
 import { CurrentUser } from "src/modules/decorators/get-current-user.decorator";
 import { AuthGuard } from "src/modules/guards/auth.guard";
 import { RolesGuard } from "src/modules/guards/role.guard";
 import { MessageResponse } from "src/modules/swagger/dtos/response.dtos";
 import { ApiSwaggerResponse } from "src/modules/swagger/swagger.decorator";
-import responseUtils from "src/utils/response.utils";
+import responseUtils, {
+  type CommonResponseType,
+} from "src/utils/response.utils";
 
 import { UpdateUserDto } from "./dto/user.dto";
 import { USER_ROLES } from "./user-types";
@@ -41,7 +45,7 @@ export class UserController {
   async findAll(
     @Res() res: Response,
     @Query() { page, limit, isPagination }: PaginationDto,
-  ) {
+  ): Promise<Response<CommonResponseType<paginationMeta<UserEntity>>>> {
     try {
       const result = await this.userService.findAll({
         page,
@@ -60,7 +64,10 @@ export class UserController {
   @ApiSwaggerResponse(UserResponse)
   @Get(USER_ROUTES.FIND_ONE)
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.ADMIN))
-  async findOne(@Res() res: Response, @Param("id") id: string) {
+  async findOne(
+    @Res() res: Response,
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<UserEntity>>> {
     try {
       const result = await this.userService.findOne(id);
       return responseUtils.success(res, {
@@ -80,10 +87,10 @@ export class UserController {
     @CurrentUser() user: TokenPayload,
     @Param("id") id: string,
     @Body() updateUserParams: UpdateUserDto,
-  ) {
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.userService.update(user.id, id, updateUserParams);
-      responseUtils.success(res, {
+      return responseUtils.success(res, {
         data: {
           message: SUCCESS_MESSAGES.UPDATED,
         },
@@ -97,7 +104,10 @@ export class UserController {
   @ApiSwaggerResponse(MessageResponse)
   @Delete(USER_ROUTES.DELETE)
   @UseGuards(AuthGuard, RolesGuard(USER_ROLES.ADMIN))
-  async remove(@Res() res: Response, @Param("id") id: string) {
+  async remove(
+    @Res() res: Response,
+    @Param("id") id: string,
+  ): Promise<Response<CommonResponseType<MessageResponse>>> {
     try {
       await this.userService.remove(id);
       return responseUtils.success(res, {

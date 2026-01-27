@@ -1,6 +1,8 @@
-import { registerDecorator } from "class-validator";
-
-import type { ValidationArguments, ValidationOptions } from "class-validator";
+import {
+  type ValidationArguments,
+  type ValidationOptions,
+  registerDecorator,
+} from "class-validator";
 
 /**
  * Allows:
@@ -13,7 +15,7 @@ import type { ValidationArguments, ValidationOptions } from "class-validator";
  * - any HTML tags
  * - script-like injections
  */
-const SAFE_TEXT_REGEX = /^[a-zA-Z0-9\s.,!?'"()\-_:;#*_>`~\[\]\n\r]+$/;
+const SAFE_TEXT_REGEX = /^[a-zA-Z0-9\s.,!?'"()\-_:;#*_>`~[\]\n\r]+$/;
 
 export function IsSafeText(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {

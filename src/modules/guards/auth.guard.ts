@@ -9,7 +9,7 @@ import {
 import { RequestWithUser } from "src/common/interfaces/request-with-user.interface";
 import { AuthUtils } from "src/utils/auth.utils";
 
-interface Authcookies {
+interface AuthCookies {
   accessToken: string;
   refreshToken: string;
 }
@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
     try {
       const request = context.switchToHttp().getRequest<RequestWithUser>();
 
-      const cookies = request.cookies as Authcookies;
+      const cookies = request.cookies as AuthCookies;
       const { accessToken } = cookies;
 
       if (!accessToken) {

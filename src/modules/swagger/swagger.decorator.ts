@@ -1,6 +1,5 @@
 // Auto-generated Swagger Decorator
-import type { Type } from "@nestjs/common";
-import { applyDecorators } from "@nestjs/common";
+import { type Type, applyDecorators } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -35,7 +34,7 @@ interface ApiSwaggerFileOption {
   mimeTypes: string[];
 }
 
-const getExceptionSchema = (httpStatus: number) => ({
+const getExceptionSchema = (httpStatus: number): object => ({
   allOf: [
     { $ref: getSchemaPath(ExceptionErrorDto) },
     {
@@ -110,7 +109,7 @@ export function ApiSwaggerResponse<TModel extends Type>(
         ],
       },
       description:
-        status === StatusCodes.CREATED
+        (status as StatusCodes) === StatusCodes.CREATED
           ? SUCCESS_MESSAGES.CREATED
           : SUCCESS_MESSAGES.SUCCESS,
     }),

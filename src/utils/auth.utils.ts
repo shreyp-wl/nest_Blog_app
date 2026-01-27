@@ -21,9 +21,8 @@ export class AuthUtils {
   verifyToken(token: string): TokenPayload {
     try {
       return <TokenPayload>verify(token, secretConfig.jwtSecretKey);
-    } catch (e) {
-      console.error(e);
-      throw new UnauthorizedException(ERROR_MESSAGES.UNAUTHORIZED);
+    } catch (error) {
+      throw new UnauthorizedException(error, ERROR_MESSAGES.UNAUTHORIZED);
     }
   }
 

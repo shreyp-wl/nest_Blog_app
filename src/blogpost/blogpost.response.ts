@@ -1,5 +1,3 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
-
 import { Exclude, Expose, Type } from "class-transformer";
 
 import { COMMENT_STATUS } from "src/comments/comments-types";
@@ -178,7 +176,7 @@ export class CommentsOnPostResponse {
   @Type(() => UserDataInCommentResponse)
   user: UserDataInCommentResponse;
 }
-export class GetAllCommentesOnPostResponse {
+export class GetAllCommentsOnPostResponse {
   @ApiPropertyWritable({
     type: [CommentsOnPostResponse],
   })

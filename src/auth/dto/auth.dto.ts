@@ -57,7 +57,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty({
     example: "john",
-    description: "Your firstname",
+    description: "Your firstName",
   })
   @TrimString()
   @IsSafeText()
@@ -66,7 +66,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty({
     example: "doe",
-    description: "Your lastname",
+    description: "Your lastName",
   })
   @TrimString()
   @IsSafeText()

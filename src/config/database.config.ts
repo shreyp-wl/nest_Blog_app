@@ -1,7 +1,5 @@
 import type { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
-import { dataSourceOptions } from "src/modules/database/data-source";
-
 import { getOsEnv } from "../config/env.config";
 
 export const databaseConfig: TypeOrmModuleOptions = {
