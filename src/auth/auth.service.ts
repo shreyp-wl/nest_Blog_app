@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -106,23 +107,42 @@ export class AuthService {
     const tokenPayload = this.authUtils.decodeToken(receivedRefreshToken);
     const { id } = tokenPayload;
 
+    const user = await this.userRepository
+      .createQueryBuilder("user")
+      .select("user.refreshToken")
+      .where("user.id = :id ", { id })
+      .getOne();
+
+    if (!user) {
+      throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
+    }
+
+    if (user.refreshToken !== receivedRefreshToken) {
+      throw new ForbiddenException(ERROR_MESSAGES.FORBIDDEN);
+    }
+
     delete tokenPayload["iat"];
     delete tokenPayload["exp"];
 
     const accessToken = this.authUtils.generateAccessToken(tokenPayload);
     const refreshToken = this.authUtils.generateRefreshToken(tokenPayload);
 
-    const user = await this.userRepository.preload({
-      id,
-      refreshToken,
-    });
+    await this.userRepository.save(user);
+
+    return { accessToken, refreshToken };
+  }
+
+  async logout(userId: string): Promise<void> {
+    const user = await this.userRepository
+      .createQueryBuilder("user")
+      .where("user.id = :id ", { id: userId })
+      .getOne();
 
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGES.NOT_FOUND);
     }
+    user.refreshToken = null;
 
     await this.userRepository.save(user);
-
-    return { accessToken, refreshToken };
   }
 }
