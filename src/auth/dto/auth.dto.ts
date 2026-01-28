@@ -52,7 +52,7 @@ export class CreateUserDto {
     message: "Username must be longer than or equal to $constraint1 characters",
   })
   @MaxLength(12, {
-    message: "Password must be at $constraint1 characters long.",
+    message: "username must be shorter than $constraint1 characters long.",
   })
   @TrimString()
   @IsSafeText()
